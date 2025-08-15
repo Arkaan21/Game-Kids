@@ -388,4 +388,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     modeSelectionDisplay.classList.add('visible');
                     modeBtn.classList.remove('needs-selection');
                 } else {
-                    level = opt.va
+                    level = opt.value;
+                    levelSelectionDisplay.textContent = `Level ${opt.text}`;
+                    levelSelectionDisplay.classList.add('visible');
+                    levelBtn.classList.remove('needs-selection');
+                }
+                selectionScreen.classList.remove('active');
+                mainMenuScreen.classList.add('active');
+                checkAndEnableStartButton();
+            };
+            selectionOptions.appendChild(btn);
+        });
+    }
+
+    modeBtn.addEventListener('click', () => { audioManager.playSFX('button'); showSelectionScreen('Mode'); });
+    levelBtn.addEventListener('click', () => { audioManager.playSFX('button'); showSelectionScreen('Level'); });
+    backToMainBtn.addEventListener('click', () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); });
+    startBtn.addEventListener('click', () => { if (!startBtn.disabled) { audioManager.playSFX('button'); startGameFlow(); } });
+    function goToMenu() {
+        audioManager.stopAll();
+        gameOverScreen.style.opacity = '0';
+        setTimeout(() => {
+            gameOverScreen.style.display = 'none';
+            gameScreen.classList.remove('active');
+            mainMenuScreen.classList.add('active');
+            audioManager.play('opening').then(() => {
+                openingMusicFinished = true;
+                checkAndEnableStartButton();
+            });
+        }, 500);
+    }
+    backToMenuBtn.addEventListener('click', () => { running = false; cancelAnimationFrame(animationFrameId); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } audioManager.stopAll(); goToMenu(); });
+    ulangiBtn.addEventListener('click', () => { audioManager.stopAll(); gameOverScreen.style.opacity = '0'; setTimeout(() => { gameOverScreen.style.display = 'none'; startGameFlow(); }, 500); });
+    menuBtn.addEventListener('click', goToMenu);
+    
+    canvas.addEventListener('mousedown', handleInteraction);
+    canvas.addEventListener('touchstart', handleInteraction);
+});
+</script>
+
+<div class="copyright-footer">
+  <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
+</div>
+</body>
+</html>
