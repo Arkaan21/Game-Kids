@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             gameScreen.classList.add('active');
             if(scoreEl) scoreEl.textContent = 0;
             if(livesContainer) livesContainer.innerHTML = '❤️❤️❤️❤️❤️';
-            if(musicOn && bgm){try{bgm.currentTime=0;bgm.play();}catch(e){}}
+            if(musicOn && bgm){try{bgm.currentTime=0;bgm.play();}catch(e){} }
         }, 500);
     };
 
