@@ -44,12 +44,15 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .overlay-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
 .overlay-buttons .big-btn { font-size: 20px; padding: 15px 20px; flex-grow: 1; min-width: 100px; }
 .copyright-footer { position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: #aaaaaa; font-family: Arial, sans-serif; z-index: 1001; }
+.music-btn { margin-left: 12px; font-size: 20px; padding: 6px 14px; border-radius: 8px; border: none; background: #FFC107; color: #333; font-family: 'Luckiest Guy', cursive; cursor: pointer; }
+.music-btn.active { background: #4CAF50; color: #fff; }
 </style>
 </head>
 <body class="no-select">
 
 <div id="splashScreen">
     <img src="icon.png" alt="Logo Game">
+    <div id="splashText" style="color:#aaa; font-size:18px;margin-top:20px;">Memulai...</div>
 </div>
 
 <div id="mainMenuScreen" class="screen">
@@ -78,6 +81,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         <div id="livesContainer"></div>
       </div>
       <div class="controls">
+        <button id="musicToggle" class="music-btn" title="Music On/Off">🎵</button>
         <button id="backToMenu" class="btn">Kembali</button>
       </div>
     </header>
@@ -129,6 +133,7 @@ const levelSettings = { 1: { speed: 0.8, spawn: 1300 }, 2: { speed: 1.0, spawn: 
 
 // --- DOM Elements ---
 const splashScreen = document.getElementById('splashScreen');
+const splashText = document.getElementById('splashText');
 const mainMenuScreen = document.getElementById('mainMenuScreen');
 const selectionScreen = document.getElementById('selectionScreen');
 const gameScreen = document.getElementById('gameScreen');
@@ -153,10 +158,11 @@ const modeSelectionDisplay = document.getElementById('modeSelectionDisplay');
 const levelSelectionDisplay = document.getElementById('levelSelectionDisplay');
 const selectionTitle = document.getElementById('selectionTitle');
 const selectionOptions = document.getElementById('selectionOptions');
+const musicToggle = document.getElementById('musicToggle');
 
 // --- Audio Manager ---
 const audioManager = {
-    audioContext: null, sounds: {}, isUnlocked: false,
+    audioContext: null, sounds: {}, isUnlocked: false, musicOn: true,
     init() {
         if(this.isUnlocked) return;
         this.isUnlocked = true;
@@ -169,6 +175,7 @@ const audioManager = {
     stopAll() { if (!this.isUnlocked) return; Object.values(this.sounds).forEach(s => { if (s) { s.pause(); s.currentTime = 0; } }); },
     play(soundName, loop = false) {
         if (!this.isUnlocked) return Promise.resolve();
+        if (soundName === 'bgm' && !this.musicOn) return Promise.resolve();
         return new Promise((resolve) => {
             const sound = this.sounds[soundName];
             if (sound) {
@@ -177,8 +184,24 @@ const audioManager = {
             } else { resolve(); }
         });
     },
-    playMusic(musicName) { this.stopAll(); return this.play(musicName, true); },
-    playSFX(sfxName) { this.play(sfxName, false); }
+    playMusic(musicName) { 
+        this.stopAll();
+        if (this.musicOn) return this.play(musicName, true); else return Promise.resolve();
+    },
+    playSFX(sfxName) { 
+        if (sfxName === 'bgm' && !this.musicOn) return;
+        this.play(sfxName, false); 
+    },
+    toggleMusic() {
+        this.musicOn = !this.musicOn;
+        if (this.musicOn) {
+            musicToggle.classList.add("active");
+            this.playMusic('bgm');
+        } else {
+            musicToggle.classList.remove("active");
+            if (this.sounds.bgm) { this.sounds.bgm.pause(); this.sounds.bgm.currentTime = 0; }
+        }
+    }
 };
 
 // --- Canvas & Game Logic ---
@@ -325,46 +348,34 @@ function handleInteraction(e) {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    let openingMusicFinished = false;
-    let splashTimeout = null;
+    let splashDone = false;
 
     function showMainMenu() {
+        if (splashDone) return;
+        splashDone = true;
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
         }, 700);
-    }
-
-    function handleFirstInteraction() {
         audioManager.init();
-        audioManager.play('opening').then(() => {
-            openingMusicFinished = true;
-            showMainMenu();
-            checkAndEnableStartButton();
-        });
-        // Fallback jika audio gagal/diblokir browser
-        splashTimeout = setTimeout(() => {
-            if (!mainMenuScreen.classList.contains('active')) showMainMenu();
-        }, 2000);
+        audioManager.play('opening');
+        checkAndEnableStartButton();
     }
 
-    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-    document.addEventListener('click', handleFirstInteraction, { once: true });
+    // Splash otomatis 2 detik, atau bisa klik untuk langsung lewati
+    setTimeout(showMainMenu, 2000);
+    splashScreen.addEventListener('click', showMainMenu);
+    splashScreen.addEventListener('touchstart', showMainMenu);
 
     highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
     highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
-
-    // Fallback: Jika user tidak interaksi, tetap hilangkan splash setelah 3 detik
-    setTimeout(() => {
-      if (!mainMenuScreen.classList.contains('active')) showMainMenu();
-    }, 3000);
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
     function checkAndEnableStartButton() {
-        startBtn.disabled = !(openingMusicFinished && mode && level);
+        startBtn.disabled = !(mode && level);
     }
     
     function showSelectionScreen(type) {
@@ -414,16 +425,20 @@ document.addEventListener('DOMContentLoaded', () => {
             gameOverScreen.style.display = 'none';
             gameScreen.classList.remove('active');
             mainMenuScreen.classList.add('active');
-            audioManager.play('opening').then(() => {
-                openingMusicFinished = true;
-                checkAndEnableStartButton();
-            });
+            audioManager.play('opening');
+            checkAndEnableStartButton();
         }, 500);
     }
     backToMenuBtn.addEventListener('click', () => { running = false; cancelAnimationFrame(animationFrameId); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } goToMenu(); });
     ulangiBtn.addEventListener('click', () => { audioManager.stopAll(); gameOverScreen.style.opacity = '0'; setTimeout(() => { gameOverScreen.style.display = 'none'; startGameFlow(); }, 500); });
     menuBtn.addEventListener('click', goToMenu);
     
+    musicToggle.addEventListener('click', function() {
+        audioManager.toggleMusic();
+        if (audioManager.musicOn) { musicToggle.classList.add("active"); }
+        else { musicToggle.classList.remove("active"); }
+    });
+
     canvas.addEventListener('mousedown', handleInteraction);
     canvas.addEventListener('touchstart', handleInteraction);
 });
