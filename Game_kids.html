@@ -14,7 +14,7 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', c
 #splashScreen img { width: 300px; max-width: 80%; }
 .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 15px; box-sizing: border-box; text-align: center; }
 .screen.active { display: flex; }
-.big-btn { font-size: 24px; padding: 20px 40px; border: none; border-radius: 16px; background-color: #007AFF; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: all 0.2s; }
+.big-btn { font-size: 24px; padding: 20px 40px; border: none; border-radius: 16px; background-color: #007AFF; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: 0.2s; }
 .big-btn:disabled { background-color: #d1d1d6; color: #8e8e93; box-shadow: none; cursor: not-allowed; }
 .big-btn:active, .option-btn:active, .btn:active { transform: scale(0.97); filter: brightness(0.95); }
 #mainMenuScreen .menu-content { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 400px; }
@@ -26,33 +26,30 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', c
 #selectionScreen h2 { font-size: 32px; color: #333; }
 #selectionScreen .options-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 #selectionScreen .option-btn { padding: 15px 25px; border: 2px solid #007AFF; border-radius: 15px; background-color: #fff; color: #007AFF; font-size: 18px; cursor: pointer; }
-#highScoreDisplay { margin-bottom: 10px; padding: 10px 20px; background: linear-gradient(45deg, #FFC107, #FF9800); color: white; border-radius: 12px; font-size: 22px; text-shadow: 2px 2px 4px rgba(0,0,0,0.16); }
+#highScoreDisplay { margin-bottom: 10px; padding: 10px 20px; background: linear-gradient(45deg, #FFC107, #FF9800); color: white; border-radius: 12px; font-size: 22px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
 #gameScreen { padding: 0; }
-header { position: absolute; top: 0; left: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(2px); width: 100%; box-sizing: border-box; }
+header { position: absolute; top: 0; left: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(2px); width: 100%; }
 .stats { font-size: 20px; color: #333; letter-spacing: 1px; display: flex; align-items: center; gap: 15px;}
 #livesContainer { font-size: 24px; }
 .btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; background-color: #007AFF; color: white; font-family: 'Luckiest Guy', cursive;}
 #gameArea { position: relative; flex: 1; width: 100%; height: 100%; background-color: #e0f7fa; overflow: hidden; }
-.target { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); font-size: 64px; padding: 10px 25px; border-radius: 12px; color: white; z-index: 15; text-shadow: 3px 3px 0px rgba(0,0,0,0.04); background: #1ABC9C; animation: wobble 2s infinite; }
+.target { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); font-size: 64px; padding: 10px 25px; border-radius: 12px; color: white; z-index: 15; text-shadow: 3px 3px 0px rgba(0,0,0,0.07); background: #E74C3C; animation: wobble 1.4s infinite; }
 canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 #popCanvas { z-index: 5; pointer-events: none; }
 @keyframes wobble { 0%, 100% { transform: translateX(-50%) rotate(-2deg) scale(1); } 50% { transform: translateX(-50%) rotate(2deg) scale(1.05); } }
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999; }
 .overlay-content { background: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
 .overlay-content h2 { font-size: 48px; margin: 0 0 10px 0; }
 .overlay-content p { font-size: 22px; margin: 5px 0; color: #333; }
 .overlay-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
 .overlay-buttons .big-btn { font-size: 20px; padding: 15px 20px; flex-grow: 1; min-width: 100px; }
 .copyright-footer { position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: #aaaaaa; font-family: Arial, sans-serif; z-index: 1001; }
-.music-btn { margin-left: 12px; font-size: 20px; padding: 6px 14px; border-radius: 8px; border: none; background: #FFC107; color: #333; font-family: 'Luckiest Guy', cursive; cursor: pointer; }
-.music-btn.active { background: #4CAF50; color: #fff; }
 </style>
 </head>
 <body class="no-select">
 
 <div id="splashScreen">
     <img src="icon.png" alt="Logo Game">
-    <div id="splashText" style="color:#aaa; font-size:18px;margin-top:20px;">Memulai...</div>
 </div>
 
 <div id="mainMenuScreen" class="screen">
@@ -81,7 +78,6 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         <div id="livesContainer"></div>
       </div>
       <div class="controls">
-        <button id="musicToggle" class="music-btn" title="Music On/Off">🎵</button>
         <button id="backToMenu" class="btn">Kembali</button>
       </div>
     </header>
@@ -129,11 +125,10 @@ const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const numbers = '0123456789'.split('');
 const allChars = [...letters, ...numbers, ...animals, ...hijaiyah];
 const bubbleColors = ['#E74C3C', '#3498DB', '#2ECC71', '#9B59B6', '#F1C40F', '#E67E22', '#1ABC9C'];
-const levelSettings = { 1: { speed: 0.8, spawn: 1300 }, 2: { speed: 1.0, spawn: 1150 }, 3: { speed: 1.3, spawn: 1000 }, 4: { speed: 1.6, spawn: 850 },  5: { speed: 1.9, spawn: 750 },  6: { speed: 2.2, spawn: 650 },  7: { speed: 2.5, spawn: 600 }, 8: { speed: 2.8, spawn: 550 }, 9: { speed: 3.1, spawn: 500 }, 10: { speed: 3.5, spawn: 450 } };
+const levelSettings = { 1: { speed: 0.8, spawn: 1300 }, 2: { speed: 1.0, spawn: 1150 }, 3: { speed: 1.3, spawn: 1000 }, 4: { speed: 1.6, spawn: 850 },  5: { speed: 1.9, spawn: 750 },  6: { speed: 2.2, spawn: 670 }, 7: { speed: 2.6, spawn: 580 }, 8: { speed: 3.0, spawn: 500 }, 9: { speed: 3.5, spawn: 420 }, 10: { speed: 4.0, spawn: 350 } };
 
 // --- DOM Elements ---
 const splashScreen = document.getElementById('splashScreen');
-const splashText = document.getElementById('splashText');
 const mainMenuScreen = document.getElementById('mainMenuScreen');
 const selectionScreen = document.getElementById('selectionScreen');
 const gameScreen = document.getElementById('gameScreen');
@@ -158,11 +153,10 @@ const modeSelectionDisplay = document.getElementById('modeSelectionDisplay');
 const levelSelectionDisplay = document.getElementById('levelSelectionDisplay');
 const selectionTitle = document.getElementById('selectionTitle');
 const selectionOptions = document.getElementById('selectionOptions');
-const musicToggle = document.getElementById('musicToggle');
 
 // --- Audio Manager ---
 const audioManager = {
-    audioContext: null, sounds: {}, isUnlocked: false, musicOn: true,
+    audioContext: null, sounds: {}, isUnlocked: false,
     init() {
         if(this.isUnlocked) return;
         this.isUnlocked = true;
@@ -175,7 +169,6 @@ const audioManager = {
     stopAll() { if (!this.isUnlocked) return; Object.values(this.sounds).forEach(s => { if (s) { s.pause(); s.currentTime = 0; } }); },
     play(soundName, loop = false) {
         if (!this.isUnlocked) return Promise.resolve();
-        if (soundName === 'bgm' && !this.musicOn) return Promise.resolve();
         return new Promise((resolve) => {
             const sound = this.sounds[soundName];
             if (sound) {
@@ -184,24 +177,8 @@ const audioManager = {
             } else { resolve(); }
         });
     },
-    playMusic(musicName) { 
-        this.stopAll();
-        if (this.musicOn) return this.play(musicName, true); else return Promise.resolve();
-    },
-    playSFX(sfxName) { 
-        if (sfxName === 'bgm' && !this.musicOn) return;
-        this.play(sfxName, false); 
-    },
-    toggleMusic() {
-        this.musicOn = !this.musicOn;
-        if (this.musicOn) {
-            musicToggle.classList.add("active");
-            this.playMusic('bgm');
-        } else {
-            musicToggle.classList.remove("active");
-            if (this.sounds.bgm) { this.sounds.bgm.pause(); this.sounds.bgm.currentTime = 0; }
-        }
-    }
+    playMusic(musicName) { this.stopAll(); return this.play(musicName, true); },
+    playSFX(sfxName) { this.play(sfxName, false); }
 };
 
 // --- Canvas & Game Logic ---
@@ -241,7 +218,7 @@ function spawnObject() {
   const color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
   objects.push({ x: Math.random()*(W-size*2)+size, y: -size, r: size, text, speed: Math.random()*0.5 + levelSettings[level].speed, color: color });
 }
-function createPopEffect(x, y) { for (let i = 0; i < 15; i++) { particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, radius: Math.random() * 3 + 1, life: 30, color: bubbleColors[Math.floor(Math.random() * bubbleColors.length)] }); } }
+function createPopEffect(x, y) { for (let i = 0; i < 15; i++) { particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, radius: Math.random() * 3 + 1, life: 30, color: bubbleColors[Math.floor(Math.random()*bubbleColors.length)] }); } }
 
 // --- Game Loop ---
 let lastSpawnTime = 0;
@@ -348,34 +325,46 @@ function handleInteraction(e) {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    let splashDone = false;
+    let openingMusicFinished = false;
+    let splashTimeout = null;
 
     function showMainMenu() {
-        if (splashDone) return;
-        splashDone = true;
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
         }, 700);
-        audioManager.init();
-        audioManager.play('opening');
-        checkAndEnableStartButton();
     }
 
-    // Splash otomatis 2 detik, atau bisa klik untuk langsung lewati
-    setTimeout(showMainMenu, 2000);
-    splashScreen.addEventListener('click', showMainMenu);
-    splashScreen.addEventListener('touchstart', showMainMenu);
+    function handleFirstInteraction() {
+        audioManager.init();
+        audioManager.play('opening').then(() => {
+            openingMusicFinished = true;
+            showMainMenu();
+            checkAndEnableStartButton();
+        });
+        // Fallback jika audio gagal/diblokir browser
+        splashTimeout = setTimeout(() => {
+            if (!mainMenuScreen.classList.contains('active')) showMainMenu();
+        }, 2000);
+    }
+
+    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+    document.addEventListener('click', handleFirstInteraction, { once: true });
 
     highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
     highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
+
+    // Fallback: Jika user tidak interaksi, tetap hilangkan splash setelah 3 detik
+    setTimeout(() => {
+      if (!mainMenuScreen.classList.contains('active')) showMainMenu();
+    }, 3000);
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
     function checkAndEnableStartButton() {
-        startBtn.disabled = !(mode && level);
+        startBtn.disabled = !(openingMusicFinished && mode && level);
     }
     
     function showSelectionScreen(type) {
@@ -425,20 +414,16 @@ document.addEventListener('DOMContentLoaded', () => {
             gameOverScreen.style.display = 'none';
             gameScreen.classList.remove('active');
             mainMenuScreen.classList.add('active');
-            audioManager.play('opening');
-            checkAndEnableStartButton();
+            audioManager.play('opening').then(() => {
+                openingMusicFinished = true;
+                checkAndEnableStartButton();
+            });
         }, 500);
     }
     backToMenuBtn.addEventListener('click', () => { running = false; cancelAnimationFrame(animationFrameId); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } goToMenu(); });
     ulangiBtn.addEventListener('click', () => { audioManager.stopAll(); gameOverScreen.style.opacity = '0'; setTimeout(() => { gameOverScreen.style.display = 'none'; startGameFlow(); }, 500); });
     menuBtn.addEventListener('click', goToMenu);
     
-    musicToggle.addEventListener('click', function() {
-        audioManager.toggleMusic();
-        if (audioManager.musicOn) { musicToggle.classList.add("active"); }
-        else { musicToggle.classList.remove("active"); }
-    });
-
     canvas.addEventListener('mousedown', handleInteraction);
     canvas.addEventListener('touchstart', handleInteraction);
 });
