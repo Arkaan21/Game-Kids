@@ -1,12 +1,13 @@
+query: "Update the file called Game_kids.html with the sha  in the repository Arkaan21/Game-Kids with the content 
 <!doctype html>
-<html lang="id">
+<html lang=\"id\">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset=\"utf-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, viewport-fit=cover\" />
   <title>Game Kids</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">
+  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
+  <link href=\"https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap\" rel=\"stylesheet\">
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%;
@@ -104,7 +105,7 @@
       justify-content: center; align-items: center; z-index: 999;
       opacity: 0; transition: opacity 0.4s;
     }
-    .overlay[style*="display: flex"] { opacity: 1 !important; }
+    .overlay[style*=\"display: flex\"] { opacity: 1 !important; }
     .overlay-content {
       background: white; padding: 25px; border-radius: 20px; text-align: center;
       box-shadow: 0 5px 20px rgba(0,0,0,0.3); width: 90%; max-width: 400px;
@@ -125,75 +126,75 @@
     .music-btn.active { background: #4CAF50; color: #fff; }
   </style>
 </head>
-<body class="no-select">
+<body class=\"no-select\">
 
-<div id="splashScreen">
-  <img src="icon.png" alt="Logo Game Kids" />
-  <div id="splashText">Memulai...</div>
+<div id=\"splashScreen\">
+  <img src=\"icon.png\" alt=\"Logo Game Kids\" />
+  <div id=\"splashText\">Memulai...</div>
 </div>
 
-<div id="mainMenuScreen" class="screen">
-  <div class="menu-content">
-    <div id="highScoreDisplay">Skor Tertinggi: 0</div>
-    <button id="modeBtn" type="button" class="big-btn main-menu-btn needs-selection">Mode</button>
-    <div id="modeSelectionDisplay" class="selection-display"></div>
-    <button id="levelBtn" type="button" class="big-btn main-menu-btn needs-selection">Level</button>
-    <div id="levelSelectionDisplay" class="selection-display"></div>
-    <button id="startBtn" type="button" class="big-btn" disabled>Mulai</button>
+<div id=\"mainMenuScreen\" class=\"screen\">
+  <div class=\"menu-content\">
+    <div id=\"highScoreDisplay\">Skor Tertinggi: 0</div>
+    <button id=\"modeBtn\" type=\"button\" class=\"big-btn main-menu-btn needs-selection\">Mode</button>
+    <div id=\"modeSelectionDisplay\" class=\"selection-display\"></div>
+    <button id=\"levelBtn\" type=\"button\" class=\"big-btn main-menu-btn needs-selection\">Level</button>
+    <div id=\"levelSelectionDisplay\" class=\"selection-display\"></div>
+    <button id=\"startBtn\" type=\"button\" class=\"big-btn\" disabled>Mulai</button>
   </div>
 </div>
 
-<div id="selectionScreen" class="screen">
-  <div class="menu-content">
-    <h2 id="selectionTitle">Pilih Mode</h2>
-    <div id="selectionOptions" class="options-grid"></div>
-    <button id="backToMainBtn" type="button" class="big-btn" style="background-color: #E74C3C; margin-top: 20px;">Kembali</button>
+<div id=\"selectionScreen\" class=\"screen\">
+  <div class=\"menu-content\">
+    <h2 id=\"selectionTitle\">Pilih Mode</h2>
+    <div id=\"selectionOptions\" class=\"options-grid\"></div>
+    <button id=\"backToMainBtn\" type=\"button\" class=\"big-btn\" style=\"background-color: #E74C3C; margin-top: 20px;\">Kembali</button>
   </div>
 </div>
 
-<div id="gameScreen" class="screen">
+<div id=\"gameScreen\" class=\"screen\">
   <header>
-    <div class="stats">
-      <span>Skor: <span id="score">0</span></span>
-      <div id="livesContainer"></div>
+    <div class=\"stats\">
+      <span>Skor: <span id=\"score\">0</span></span>
+      <div id=\"livesContainer\"></div>
     </div>
-    <div class="controls">
-      <button id="musicToggle" type="button" class="music-btn" title="Music On/Off">🎵</button>
-      <button id="backToMenu" type="button" class="btn">Kembali</button>
+    <div class=\"controls\">
+      <button id=\"musicToggle\" type=\"button\" class=\"music-btn\" title=\"Music On/Off\">🎵</button>
+      <button id=\"backToMenu\" type=\"button\" class=\"btn\">Kembali</button>
     </div>
   </header>
-  <div id="gameArea">
-    <canvas id="gameCanvas"></canvas>
-    <canvas id="popCanvas"></canvas>
+  <div id=\"gameArea\">
+    <canvas id=\"gameCanvas\"></canvas>
+    <canvas id=\"popCanvas\"></canvas>
   </div>
-  <div id="target" class="target">A</div>
+  <div id=\"target\" class=\"target\">A</div>
 </div>
 
-<div id="dimOverlay" class="overlay"></div>
+<div id=\"dimOverlay\" class=\"overlay\"></div>
 
-<div id="gameOverScreen" class="overlay">
-  <div class="overlay-content">
-    <h2 style="color: #E74C3C;">Game Over</h2>
-    <p>Skor Akhir: <span id="finalScore">0</span></p>
-    <p>Jawaban Benar: <span id="finalCorrect">0</span></p>
-    <div class="overlay-buttons">
-      <button id="ulangiBtn" type="button" class="big-btn">Ulangi</button>
-      <button id="menuBtn" type="button" class="big-btn">Menu</button>
+<div id=\"gameOverScreen\" class=\"overlay\">
+  <div class=\"overlay-content\">
+    <h2 style=\"color: #E74C3C;\">Game Over</h2>
+    <p>Skor Akhir: <span id=\"finalScore\">0</span></p>
+    <p>Jawaban Benar: <span id=\"finalCorrect\">0</span></p>
+    <div class=\"overlay-buttons\">
+      <button id=\"ulangiBtn\" type=\"button\" class=\"big-btn\">Ulangi</button>
+      <button id=\"menuBtn\" type=\"button\" class=\"big-btn\">Menu</button>
     </div>
   </div>
 </div>
 
 <!-- Audio Elements -->
-<audio id="audio_opening" src="openinggame.wav" preload="auto"></audio>
-<audio id="audio_bgm" src="latarmusic.mp3" preload="auto" loop></audio>
-<audio id="audio_countdown" src="mulaigame.wav" preload="auto"></audio>
-<audio id="audio_pop" src="pop.mp3" preload="auto"></audio>
-<audio id="audio_button" src="tombol.mp3" preload="auto"></audio>
-<audio id="audio_benar" src="tebakbenar.wav" preload="auto"></audio>
-<audio id="audio_salah" src="tebaksalah.wav" preload="auto"></audio>
-<audio id="audio_gameover" src="gameover.wav" preload="auto"></audio>
-<audio id="audio_tangkaptarget" src="tangkaptarget.wav" preload="auto"></audio>
-<audio id="audio_targetbaru" src="targetbaru.wav" preload="auto"></audio>
+<audio id=\"audio_opening\" src=\"openinggame.wav\" preload=\"auto\"></audio>
+<audio id=\"audio_bgm\" src=\"latarmusic.mp3\" preload=\"auto\" loop></audio>
+<audio id=\"audio_countdown\" src=\"mulaigame.wav\" preload=\"auto\"></audio>
+<audio id=\"audio_pop\" src=\"pop.mp3\" preload=\"auto\"></audio>
+<audio id=\"audio_button\" src=\"tombol.mp3\" preload=\"auto\"></audio>
+<audio id=\"audio_benar\" src=\"tebakbenar.wav\" preload=\"auto\"></audio>
+<audio id=\"audio_salah\" src=\"tebaksalah.wav\" preload=\"auto\"></audio>
+<audio id=\"audio_gameover\" src=\"gameover.wav\" preload=\"auto\"></audio>
+<audio id=\"audio_tangkaptarget\" src=\"tangkaptarget.wav\" preload=\"auto\"></audio>
+<audio id=\"audio_targetbaru\" src=\"targetbaru.wav\" preload=\"auto\"></audio>
 
 <script>
   // --- State & Data ---
@@ -279,10 +280,10 @@
     toggleMusic() {
       this.musicOn = !this.musicOn;
       if (this.musicOn) {
-        musicToggle.classList.add("active");
+        musicToggle.classList.add(\"active\");
         this.playMusic('bgm');
       } else {
-        musicToggle.classList.remove("active");
+        musicToggle.classList.remove(\"active\");
         if (this.sounds.bgm) { this.sounds.bgm.pause(); this.sounds.bgm.currentTime = 0; }
       }
     }
@@ -550,8 +551,8 @@
 
     musicToggle.addEventListener('click', function() {
       audioManager.toggleMusic();
-      if (audioManager.musicOn) { musicToggle.classList.add("active"); }
-      else { musicToggle.classList.remove("active"); }
+      if (audioManager.musicOn) { musicToggle.classList.add(\"active\"); }
+      else { musicToggle.classList.remove(\"active\"); }
     });
 
     canvas.addEventListener('mousedown', handleInteraction);
@@ -559,8 +560,9 @@
   });
 </script>
 
-<div class="copyright-footer">
+<div class=\"copyright-footer\">
   <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
 </div>
 </body>
 </html>
+"
