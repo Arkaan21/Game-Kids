@@ -10,7 +10,7 @@
 <style>
 /* Gaya Dasar */
 html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', cursive; background: #f0f2f5; overflow: hidden; touch-action: none; }
-.no-select { user-select: none; -webkit-user-select: none; }
+.no-select { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 
 /* Splash Screen */
 #splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.7s; }
@@ -55,9 +55,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <body class="no-select">
 
 <div id="splashScreen">
-    <!-- Menggunakan gambar placeholder agar tidak ada error jika file icon.png tidak ada -->
     <img src="https://placehold.co/300x150/a2f3b3/333333?text=Game+Anak" alt="Logo Game" onerror="this.onerror=null;this.src='https://placehold.co/300x150/cccccc/333333?text=Logo+Error';">
-    <!-- Tombol ini adalah kunci untuk memulai audio dan game -->
     <button id="startExperienceBtn" class="start-experience-btn">Mulai</button>
 </div>
 
@@ -169,15 +167,11 @@ const selectionOptions = document.getElementById('selectionOptions');
 const audioManager = {
     audioContext: null, sounds: {}, isUnlocked: false,
     init() {
-        // Fungsi ini hanya akan dipanggil SEKALI, yaitu saat pengguna menekan tombol "Mulai" pertama kali.
-        // Ini adalah langkah PENTING untuk "membuka" izin audio dari browser.
         if (this.isUnlocked) return;
         this.isUnlocked = true;
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (e) {
-            console.error("Web Audio API is not supported in this browser");
-        }
+        } catch (e) { console.error("Web Audio API is not supported in this browser"); }
         const soundNames = ['opening', 'bgm', 'countdown', 'pop', 'button', 'benar', 'salah', 'gameover', 'tangkaptarget', 'targetbaru'];
         soundNames.forEach(name => { this.sounds[name] = document.getElementById(`audio_${name}`); });
     },
@@ -194,16 +188,12 @@ const audioManager = {
                 sound.loop = loop;
                 const playPromise = sound.play();
                 if (playPromise !== undefined) {
-                    playPromise.then(() => resolve()).catch(error => {
-                        console.warn(`Gagal memutar audio ${soundName}:`, error);
-                        resolve(); // Tetap resolve agar alur game tidak berhenti
+                    playPromise.then(resolve).catch(error => {
+                        console.warn(`Audio play failed for ${soundName}:`, error);
+                        resolve();
                     });
-                } else {
-                    resolve();
-                }
-            } else {
-                resolve();
-            }
+                } else { resolve(); }
+            } else { resolve(); }
         });
     },
     playMusic(musicName) { this.stopAll(); return this.play(musicName, true); },
@@ -214,22 +204,17 @@ const audioManager = {
 let W, H, dpr;
 function resizeCanvas() {
     const gameArea = document.getElementById('gameArea');
-    W = gameArea.clientWidth;
-    H = gameArea.clientHeight;
+    W = gameArea.clientWidth; H = gameArea.clientHeight;
     dpr = window.devicePixelRatio || 1;
-    [canvas, popCanvas].forEach(c => {
-        c.width = W * dpr;
-        c.height = H * dpr;
-    });
+    [canvas, popCanvas].forEach(c => { c.width = W * dpr; c.height = H * dpr; });
     [ctx, pctx].forEach(c => c.setTransform(dpr, 0, 0, dpr, 0, 0));
 }
 function pickNewTarget() {
-    let sourceArray;
+    let sourceArray = allChars;
     if (mode === 'letters') sourceArray = letters;
     else if (mode === 'numbers') sourceArray = numbers;
     else if (mode === 'animals') sourceArray = animals;
     else if (mode === 'hijaiyah') sourceArray = hijaiyah;
-    else if (mode === 'mix') sourceArray = allChars;
     target = sourceArray[Math.floor(Math.random() * sourceArray.length)];
     targetEl.textContent = target;
     targetEl.style.backgroundColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
@@ -238,16 +223,13 @@ function pickNewTarget() {
 function spawnObject() {
     const size = Math.random() * 20 + 30;
     let text;
-    // Meningkatkan kemungkinan target muncul agar game lebih seimbang
-    if (Math.random() < 0.35) {
-        text = target;
-    } else {
-        let sourceArray;
+    if (Math.random() < 0.35) { text = target; }
+    else {
+        let sourceArray = allChars;
         if (mode === 'letters') sourceArray = letters;
         else if (mode === 'numbers') sourceArray = numbers;
         else if (mode === 'animals') sourceArray = animals;
         else if (mode === 'hijaiyah') sourceArray = hijaiyah;
-        else if (mode === 'mix') sourceArray = allChars;
         text = sourceArray[Math.floor(Math.random() * sourceArray.length)];
     }
     const color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
@@ -267,67 +249,40 @@ function gameLoop(timestamp) {
     ctx.clearRect(0, 0, W, H);
     pctx.clearRect(0, 0, W, H);
     if (timestamp - lastSpawnTime > levelSettings[level].spawn) {
-        spawnObject();
-        lastSpawnTime = timestamp;
+        spawnObject(); lastSpawnTime = timestamp;
     }
     for (let i = objects.length - 1; i >= 0; i--) {
-        const o = objects[i];
-        o.y += o.speed;
-        if (o.y > H + o.r) {
-            objects.splice(i, 1);
-            continue;
-        }
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-        ctx.fillStyle = o.color;
-        ctx.fill();
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.fillStyle = 'white';
-        ctx.font = `${o.r * 0.8}px 'Luckiest Guy'`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 3;
+        const o = objects[i]; o.y += o.speed;
+        if (o.y > H + o.r) { objects.splice(i, 1); continue; }
+        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.fillStyle = o.color; ctx.fill();
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 4; ctx.stroke();
+        ctx.fillStyle = 'white'; ctx.font = `${o.r * 0.8}px 'Luckiest Guy'`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 3;
         ctx.fillText(o.text, o.x, o.y);
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
     }
     for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life--;
-        if (p.life <= 0) {
-            particles.splice(i, 1);
-            continue;
-        }
-        pctx.beginPath();
-        pctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        pctx.fillStyle = p.color;
-        pctx.globalAlpha = p.life / 30;
-        pctx.fill();
+        const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--;
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        pctx.beginPath(); pctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        pctx.fillStyle = p.color; pctx.globalAlpha = p.life / 30; pctx.fill();
         pctx.globalAlpha = 1.0;
     }
 }
 
 // --- Game Flow ---
 const sleep = ms => new Promise(res => setTimeout(res, ms));
-function updateLivesDisplay() {
-    livesContainer.innerHTML = '❤️'.repeat(livesRemaining);
-}
+function updateLivesDisplay() { livesContainer.innerHTML = '❤️'.repeat(livesRemaining); }
 async function prepareAndStartGame() {
     dimOverlay.style.display = 'flex';
-    await sleep(10); // Memberi waktu browser untuk render perubahan display
-    dimOverlay.style.opacity = '1';
+    await sleep(10); dimOverlay.style.opacity = '1';
     await audioManager.play('countdown');
     await audioManager.play('tangkaptarget');
     dimOverlay.style.opacity = '0';
-    await sleep(500);
-    dimOverlay.style.display = 'none';
-    running = true;
-    pickNewTarget();
+    await sleep(500); dimOverlay.style.display = 'none';
+    running = true; pickNewTarget();
     lastSpawnTime = performance.now();
     animationFrameId = requestAnimationFrame(gameLoop);
     audioManager.playMusic('bgm');
@@ -337,107 +292,75 @@ function startGameFlow() {
     mainMenuScreen.classList.remove('active');
     gameScreen.classList.add('active');
     requestAnimationFrame(() => {
-        resizeCanvas();
-        score = 0;
-        correctAnswers = 0;
-        livesRemaining = 5;
-        objects = [];
-        particles = [];
-        scoreEl.textContent = score;
-        updateLivesDisplay();
+        resizeCanvas(); score = 0; correctAnswers = 0; livesRemaining = 5;
+        objects = []; particles = [];
+        scoreEl.textContent = score; updateLivesDisplay();
         prepareAndStartGame();
     });
 }
 function triggerGameOver() {
     running = false;
     cancelAnimationFrame(animationFrameId);
-    audioManager.stopAll();
-    audioManager.play('gameover');
+    audioManager.stopAll(); audioManager.play('gameover');
     if (score > highScore) {
         highScore = score;
         localStorage.setItem('gameKidsHighScore', highScore);
         highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
     }
-    finalScoreEl.textContent = score;
-    finalCorrectEl.textContent = correctAnswers;
+    finalScoreEl.textContent = score; finalCorrectEl.textContent = correctAnswers;
     gameOverScreen.style.display = 'flex';
-    setTimeout(() => {
-        if (gameOverScreen) gameOverScreen.style.opacity = '1';
-    }, 10);
+    setTimeout(() => { if (gameOverScreen) gameOverScreen.style.opacity = '1'; }, 10);
 }
 
 // --- Event Listeners ---
 function handleInteraction(e) {
     if (!running) return;
-    // Menangani input sentuhan dan mouse
     const touch = e.touches ? e.touches[0] : e;
     if (!touch.clientX) return;
-
     const rect = canvas.getBoundingClientRect();
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
-
     for (let i = objects.length - 1; i >= 0; i--) {
         const o = objects[i];
         const dist = Math.sqrt((x - o.x) ** 2 + (y - o.y) ** 2);
         if (dist < o.r) {
-            audioManager.playSFX('pop');
-            createPopEffect(o.x, o.y);
+            audioManager.playSFX('pop'); createPopEffect(o.x, o.y);
             if (o.text === target) {
-                score += 25;
-                correctAnswers++;
-                audioManager.playSFX('benar');
-                pickNewTarget();
+                score += 25; correctAnswers++;
+                audioManager.playSFX('benar'); pickNewTarget();
             } else {
-                score -= 15;
-                if (score < 0) score = 0;
-                livesRemaining--;
-                updateLivesDisplay();
+                score -= 15; if (score < 0) score = 0;
+                livesRemaining--; updateLivesDisplay();
                 audioManager.playSFX('salah');
-                if (livesRemaining <= 0) {
-                    triggerGameOver();
-                    return; // Keluar dari fungsi jika game over
-                }
+                if (livesRemaining <= 0) { triggerGameOver(); return; }
             }
             objects.splice(i, 1);
             scoreEl.textContent = score;
-            return; // Hanya berinteraksi dengan satu objek teratas
+            return;
         }
     }
 }
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    let openingMusicFinished = false;
-
-    // Memuat high score dari local storage saat game pertama kali dibuka
     highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
     highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
     function checkAndEnableStartButton() {
-        // Tombol start game hanya aktif jika mode dan level sudah dipilih
         startBtn.disabled = !(mode && level);
     }
     
-    // Event listener untuk tombol "Mulai" di splash screen
     startExperienceBtn.addEventListener('click', () => {
-        // 1. Inisialisasi audio manager. Ini adalah langkah paling penting.
         audioManager.init();
-        
-        // 2. Memutar musik pembuka.
-        audioManager.play('opening').then(() => {
-            openingMusicFinished = true;
-        });
-
-        // 3. Transisi dari splash screen ke menu utama
+        audioManager.play('opening');
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
         }, 700);
-    }, { once: true }); // Listener ini hanya berjalan sekali.
+    }, { once: true });
 
     function showSelectionScreen(type) {
         mainMenuScreen.classList.remove('active');
@@ -457,15 +380,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.onclick = () => {
                 audioManager.playSFX('button');
                 if (type === 'Mode') {
-                    mode = opt.value;
-                    modeSelectionDisplay.textContent = opt.text;
-                    modeSelectionDisplay.classList.add('visible');
-                    modeBtn.classList.remove('needs-selection');
+                    mode = opt.value; modeSelectionDisplay.textContent = opt.text;
+                    modeSelectionDisplay.classList.add('visible'); modeBtn.classList.remove('needs-selection');
                 } else {
-                    level = opt.value;
-                    levelSelectionDisplay.textContent = opt.text;
-                    levelSelectionDisplay.classList.add('visible');
-                    levelBtn.classList.remove('needs-selection');
+                    level = opt.value; levelSelectionDisplay.textContent = `Level ${opt.value}`;
+                    levelSelectionDisplay.classList.add('visible'); levelBtn.classList.remove('needs-selection');
                 }
                 selectionScreen.classList.remove('active');
                 mainMenuScreen.classList.add('active');
@@ -482,23 +401,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function goToMenu() {
         audioManager.stopAll();
-        // Sembunyikan layar game over jika terlihat
         gameOverScreen.style.opacity = '0';
         setTimeout(() => {
             gameOverScreen.style.display = 'none';
             gameScreen.classList.remove('active');
             mainMenuScreen.classList.add('active');
-            // Putar ulang musik pembuka untuk suasana menu
             audioManager.play('opening');
         }, 500);
     }
 
     backToMenuBtn.addEventListener('click', () => { 
-        running = false; 
-        cancelAnimationFrame(animationFrameId); 
+        running = false; cancelAnimationFrame(animationFrameId); 
         if (score > highScore) { 
-            highScore = score; 
-            localStorage.setItem('gameKidsHighScore', highScore); 
+            highScore = score; localStorage.setItem('gameKidsHighScore', highScore); 
             highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; 
         } 
         goToMenu(); 
@@ -516,8 +431,24 @@ document.addEventListener('DOMContentLoaded', () => {
         goToMenu();
     });
     
-    canvas.addEventListener('mousedown', handleInteraction);
-    canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+    // ===================================================================
+    // PERUBAHAN KUNCI UNTUK KOMPATIBILITAS ANDROID WEBVIEW
+    // ===================================================================
+    // Fungsi ini akan menangani semua jenis input (sentuhan dan klik mouse)
+    function unifiedCanvasInteraction(e) {
+        // Mencegah aksi default browser/webview seperti scrolling atau zoom.
+        // Ini SANGAT PENTING untuk WebView di Android.
+        e.preventDefault();
+        handleInteraction(e);
+    }
+
+    // Menggunakan 'mousedown' untuk komputer/desktop
+    canvas.addEventListener('mousedown', unifiedCanvasInteraction);
+
+    // Menggunakan 'touchstart' untuk perangkat mobile (termasuk Android WebView)
+    // 'passive: false' memberitahu browser bahwa kita mungkin akan membatalkan event default.
+    canvas.addEventListener('touchstart', unifiedCanvasInteraction, { passive: false });
+    // ===================================================================
 });
 </script>
 
