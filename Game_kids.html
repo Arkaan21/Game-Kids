@@ -20,6 +20,7 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', c
 <!-- Splash Screen -->
 <div id="splashScreen" class="screen active" style="background:#fff;">
     <img src="icon.png" alt="Logo Game" style="width:200px;max-width:60%;">
+    <p style="color:#aaa;font-size:18px;margin-top:20px;">Tap untuk memulai</p>
 </div>
 
 <!-- Main Menu -->
@@ -63,7 +64,7 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', c
 <audio id="audio_bgm" src="latarmusic.mp3" preload="auto" loop></audio>
 
 <script>
-// Variabel game
+// Variabel
 let score = 0, highScore = 0;
 
 // Elemen
@@ -74,23 +75,26 @@ const gameOverScreen = document.getElementById('gameOverScreen');
 const scoreEl = document.getElementById('score');
 const highScoreEl = document.getElementById('highScoreDisplay');
 const finalScoreEl = document.getElementById('finalScore');
+const finalCorrectEl = document.getElementById('finalCorrect');
 
 // Audio
 const audio_opening = document.getElementById('audio_opening');
 const audio_bgm = document.getElementById('audio_bgm');
 
-// Splash otomatis ke menu setelah musik opening
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        audio_opening.play().catch(()=>{});
-        audio_opening.onended = () => {
-            splashScreen.classList.remove('active');
-            mainMenuScreen.classList.add('active');
-        };
-    }, 500);
-});
+// High score load
+highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
+highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
 
-// Mulai game
+// Splash tap untuk mulai musik opening
+splashScreen.addEventListener('click', () => {
+    audio_opening.play().catch(()=>{});
+    audio_opening.onended = () => {
+        splashScreen.classList.remove('active');
+        mainMenuScreen.classList.add('active');
+    };
+}, { once: true });
+
+// Tombol mulai game
 document.getElementById('startBtn').addEventListener('click', () => {
     mainMenuScreen.classList.remove('active');
     gameScreen.classList.add('active');
@@ -99,7 +103,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
     audio_bgm.play().catch(()=>{});
 });
 
-// Ulangi game
+// Tombol ulangi game
 document.getElementById('ulangiBtn').addEventListener('click', () => {
     gameOverScreen.classList.remove('active');
     gameScreen.classList.add('active');
@@ -108,13 +112,13 @@ document.getElementById('ulangiBtn').addEventListener('click', () => {
     audio_bgm.play().catch(()=>{});
 });
 
-// Kembali ke menu
+// Kembali ke menu dari Game Over
 document.getElementById('menuBtn').addEventListener('click', () => {
     gameOverScreen.classList.remove('active');
     mainMenuScreen.classList.add('active');
 });
 
-// Back dari game ke menu
+// Back ke menu dari game
 document.getElementById('backToMenu').addEventListener('click', () => {
     gameScreen.classList.remove('active');
     mainMenuScreen.classList.add('active');
