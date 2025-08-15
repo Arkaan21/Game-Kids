@@ -407,4 +407,122 @@ function handleInteraction(e) {
 }
 
 // --- Initialization ---
-document.addEventListe
+document.addEventListener('DOMContentLoaded', () => {
+    let openingMusicFinished = false;
+
+    // Memuat high score dari local storage saat game pertama kali dibuka
+    highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
+    highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function checkAndEnableStartButton() {
+        // Tombol start game hanya aktif jika mode dan level sudah dipilih
+        startBtn.disabled = !(mode && level);
+    }
+    
+    // Event listener untuk tombol "Mulai" di splash screen
+    startExperienceBtn.addEventListener('click', () => {
+        // 1. Inisialisasi audio manager. Ini adalah langkah paling penting.
+        audioManager.init();
+        
+        // 2. Memutar musik pembuka.
+        audioManager.play('opening').then(() => {
+            openingMusicFinished = true;
+        });
+
+        // 3. Transisi dari splash screen ke menu utama
+        splashScreen.style.opacity = '0';
+        setTimeout(() => {
+            splashScreen.style.display = 'none';
+            mainMenuScreen.classList.add('active');
+        }, 700);
+    }, { once: true }); // Listener ini hanya berjalan sekali.
+
+    function showSelectionScreen(type) {
+        mainMenuScreen.classList.remove('active');
+        selectionScreen.classList.add('active');
+        selectionTitle.textContent = `Pilih ${type}`;
+        selectionOptions.innerHTML = '';
+        let options;
+        if (type === 'Mode') {
+            options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }];
+        } else {
+            options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 }));
+        }
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt.text;
+            btn.onclick = () => {
+                audioManager.playSFX('button');
+                if (type === 'Mode') {
+                    mode = opt.value;
+                    modeSelectionDisplay.textContent = opt.text;
+                    modeSelectionDisplay.classList.add('visible');
+                    modeBtn.classList.remove('needs-selection');
+                } else {
+                    level = opt.value;
+                    levelSelectionDisplay.textContent = opt.text;
+                    levelSelectionDisplay.classList.add('visible');
+                    levelBtn.classList.remove('needs-selection');
+                }
+                selectionScreen.classList.remove('active');
+                mainMenuScreen.classList.add('active');
+                checkAndEnableStartButton();
+            };
+            selectionOptions.appendChild(btn);
+        });
+    }
+
+    modeBtn.addEventListener('click', () => { audioManager.playSFX('button'); showSelectionScreen('Mode'); });
+    levelBtn.addEventListener('click', () => { audioManager.playSFX('button'); showSelectionScreen('Level'); });
+    backToMainBtn.addEventListener('click', () => { audioManager.playSFX('button'); selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); });
+    startBtn.addEventListener('click', () => { if (!startBtn.disabled) { audioManager.playSFX('button'); startGameFlow(); } });
+    
+    function goToMenu() {
+        audioManager.stopAll();
+        // Sembunyikan layar game over jika terlihat
+        gameOverScreen.style.opacity = '0';
+        setTimeout(() => {
+            gameOverScreen.style.display = 'none';
+            gameScreen.classList.remove('active');
+            mainMenuScreen.classList.add('active');
+            // Putar ulang musik pembuka untuk suasana menu
+            audioManager.play('opening');
+        }, 500);
+    }
+
+    backToMenuBtn.addEventListener('click', () => { 
+        running = false; 
+        cancelAnimationFrame(animationFrameId); 
+        if (score > highScore) { 
+            highScore = score; 
+            localStorage.setItem('gameKidsHighScore', highScore); 
+            highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; 
+        } 
+        goToMenu(); 
+    });
+    ulangiBtn.addEventListener('click', () => { 
+        audioManager.playSFX('button');
+        gameOverScreen.style.opacity = '0'; 
+        setTimeout(() => { 
+            gameOverScreen.style.display = 'none'; 
+            startGameFlow(); 
+        }, 500); 
+    });
+    menuBtn.addEventListener('click', () => {
+        audioManager.playSFX('button');
+        goToMenu();
+    });
+    
+    canvas.addEventListener('mousedown', handleInteraction);
+    canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+});
+</script>
+
+<div class="copyright-footer">
+  <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
+</div>
+</body>
+</html>
