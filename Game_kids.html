@@ -4,29 +4,30 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
 <title>Game Kids</title>
-<!-- ... CSS dan font seperti sebelumnya ... -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
-/* (CSS seperti sebelumnya, tidak diubah demi ringkas) */
+/* ... CSS seperti sebelumnya ... */
 </style>
 </head>
 <body class="no-select">
 
+<!-- Splash -->
 <div id="splashScreen">
     <img src="icon.png" alt="Logo Game">
     <div id="splashText" style="color:#aaa; font-size:18px;margin-top:20px;">Memulai...</div>
 </div>
 
+<!-- Main Menu -->
 <div id="mainMenuScreen" class="screen">
     <div class="menu-content">
-        <div id="highScoreDisplay">Skor Tertinggi: 0</div>
-        <button id="modeBtn" class="big-btn main-menu-btn needs-selection">Mode</button>
-        <div id="modeSelectionDisplay" class="selection-display"></div>
-        <button id="levelBtn" class="big-btn main-menu-btn needs-selection">Level</button>
-        <div id="levelSelectionDisplay" class="selection-display"></div>
-        <button id="startBtn" class="big-btn" disabled>Mulai</button>
+      <div id="highScoreDisplay">Skor Tertinggi: 0</div>
+      <button id="modeBtn" class="big-btn main-menu-btn needs-selection">Mode</button>
+      <div id="modeSelectionDisplay" class="selection-display"></div>
+      <button id="levelBtn" class="big-btn main-menu-btn needs-selection">Level</button>
+      <div id="levelSelectionDisplay" class="selection-display"></div>
+      <button id="startBtn" class="big-btn" disabled>Mulai</button>
     </div>
 </div>
 <div id="selectionScreen" class="screen">
@@ -65,7 +66,7 @@
         </div>
     </div>
 </div>
-<!-- ... audio & copyright ... -->
+<!-- ... AUDIO TAGS ... -->
 <audio id="audio_opening" src="openinggame.wav" preload="auto"></audio>
 <audio id="audio_bgm" src="latarmusic.mp3" preload="auto" loop></audio>
 <audio id="audio_countdown" src="mulaigame.wav" preload="auto"></audio>
@@ -78,7 +79,7 @@
 <audio id="audio_targetbaru" src="targetbaru.wav" preload="auto"></audio>
 
 <script>
-/* --- PATCH SPLASH ANTI-STUCK --- */
+/* ---- PATCH SPLASH ANTI STUCK ---- */
 function hideSplashScreen() {
     var splash = document.getElementById('splashScreen');
     if (splash && splash.style.display !== "none") {
@@ -96,10 +97,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 window.addEventListener('error', hideSplashScreen);
 
-/* --- LOGIKA TOMBOL DAN STATE UI --- */
+/* ---- UNIVERSAL AUDIO UNLOCKER ---- */
+function unlockAllAudio() {
+    const audioIds = [
+        'audio_opening','audio_bgm','audio_countdown','audio_pop','audio_button',
+        'audio_benar','audio_salah','audio_gameover','audio_tangkaptarget','audio_targetbaru'
+    ];
+    audioIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { try { el.play().then(()=>{el.pause(); el.currentTime=0;}); } catch(e){} }
+    });
+}
+['touchstart','mousedown','keydown'].forEach(ev =>
+    window.addEventListener(ev, unlockAllAudio, {once:true,passive:true})
+);
+
+/* ---- LOGIKA TOMBOL DAN MUSIK ---- */
 document.addEventListener('DOMContentLoaded', function() {
     // State
-    let mode = null, level = null, highScore = 0;
+    let mode = null, level = null, musicOn = false, highScore = 0;
 
     // Tombol & elemen
     const modeBtn = document.getElementById('modeBtn');
@@ -124,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const finalScoreEl = document.getElementById('finalScore');
     const finalCorrectEl = document.getElementById('finalCorrect');
     const dimOverlay = document.getElementById('dimOverlay');
+    const bgm = document.getElementById('audio_bgm');
 
     // Cek tombol mulai
     function checkAndEnableStartButton() {
@@ -147,7 +164,6 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.className = 'option-btn';
             btn.textContent = opt.text;
             btn.onclick = function() {
-                // Audio tombol jika ada
                 let sfx = document.getElementById('audio_button'); if(sfx) {sfx.currentTime=0;sfx.play();}
                 if (type === 'Mode') {
                     mode = opt.value;
@@ -168,11 +184,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Tombol Mode
+    // Tombol Mode/Level
     modeBtn.onclick = function() { showSelectionScreen('Mode'); };
-    // Tombol Level
     levelBtn.onclick = function() { showSelectionScreen('Level'); };
-    // Tombol Kembali dari Selection
     backToMainBtn.onclick = function() {
         selectionScreen.classList.remove('active');
         mainMenuScreen.classList.add('active');
@@ -181,63 +195,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tombol Mulai
     startBtn.onclick = function() {
         if (startBtn.disabled) return;
-        // Audio tombol jika ada
         let sfx = document.getElementById('audio_button'); if(sfx) {sfx.currentTime=0;sfx.play();}
         mainMenuScreen.classList.remove('active');
         gameScreen.classList.add('active');
-        // Reset skor dan game state (jika ada fungsi di game asli, panggil di sini)
         if(scoreEl) scoreEl.textContent = 0;
         if(livesContainer) livesContainer.innerHTML = '❤️❤️❤️❤️❤️';
+        // Play BGM jika tombol music aktif
+        if(musicOn && bgm) { try{bgm.currentTime=0;bgm.play();}catch(e){} }
     };
 
     // Tombol Kembali di Game
     backToMenuBtn.onclick = function() {
-        // Audio tombol jika ada
         let sfx = document.getElementById('audio_button'); if(sfx) {sfx.currentTime=0;sfx.play();}
         gameScreen.classList.remove('active');
         mainMenuScreen.classList.add('active');
+        if(bgm) bgm.pause();
     };
 
     // Tombol Ulangi di Game Over
     ulangiBtn.onclick = function() {
-        // Audio tombol jika ada
         let sfx = document.getElementById('audio_button'); if(sfx) {sfx.currentTime=0;sfx.play();}
         gameOverScreen.style.opacity = '0';
         setTimeout(function(){
             gameOverScreen.style.display = 'none';
             gameScreen.classList.add('active');
-            // Reset skor dan nyawa (game state)
             if(scoreEl) scoreEl.textContent = 0;
             if(livesContainer) livesContainer.innerHTML = '❤️❤️❤️❤️❤️';
+            if(musicOn && bgm){try{bgm.currentTime=0;bgm.play();}catch(e){}}
         }, 500);
     };
 
     // Tombol Menu di Game Over
     menuBtn.onclick = function() {
-        // Audio tombol jika ada
         let sfx = document.getElementById('audio_button'); if(sfx) {sfx.currentTime=0;sfx.play();}
         gameOverScreen.style.opacity = '0';
         setTimeout(function(){
             gameOverScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
+            if(bgm) bgm.pause();
         }, 500);
     };
 
     // Tombol Music On/Off
     musicToggle.onclick = function() {
         musicToggle.classList.toggle("active");
-        let bgm = document.getElementById('audio_bgm');
-        if(musicToggle.classList.contains("active") && bgm) { bgm.play(); }
+        musicOn = musicToggle.classList.contains("active");
+        if(musicOn && bgm) { try{bgm.currentTime=0;bgm.play();}catch(e){} }
         else if(bgm) { bgm.pause(); }
-    };
-
-    // Saat game over dari game logic, tampilkan gameOverScreen
-    window.triggerGameOver = function(finalScore, correctAnswers) {
-        gameScreen.classList.remove('active');
-        gameOverScreen.style.display = 'flex';
-        setTimeout(()=> gameOverScreen.style.opacity = '1', 100);
-        if(finalScoreEl) finalScoreEl.textContent = finalScore || 0;
-        if(finalCorrectEl) finalCorrectEl.textContent = correctAnswers || 0;
     };
 
     // Skor tertinggi
@@ -248,7 +252,6 @@ document.addEventListener('DOMContentLoaded', function() {
     mainMenuScreen.classList.add('active');
 });
 </script>
-
 <div class="copyright-footer">
   <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
 </div>
