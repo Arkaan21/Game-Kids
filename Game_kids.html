@@ -12,13 +12,15 @@
 html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', cursive; background: #f0f2f5; overflow: hidden; touch-action: none; }
 .no-select { user-select: none; -webkit-user-select: none; }
 
-/* Splash Screen dikontrol oleh JS */
+/* Splash Screen */
 #splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.7s; }
 #splashScreen img { width: 300px; max-width: 80%; }
+#splashScreen .start-experience-btn { margin-top: 30px; font-size: 32px; padding: 20px 50px; border: none; border-radius: 20px; background-color: #2ECC71; color: white; cursor: pointer; box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); transition: transform 0.2s, filter 0.2s; }
+#splashScreen .start-experience-btn:active { transform: scale(0.96); filter: brightness(0.9); }
 
 .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 15px; box-sizing: border-box; text-align: center; }
 .screen.active { display: flex; }
-.big-btn { font-size: 24px; padding: 20px 40px; border: none; border-radius: 16px; background-color: #007AFF; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: 0.2s; }
+.big-btn { font-size: 24px; padding: 20px 40px; border: none; border-radius: 16px; background-color: #007AFF; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: transform 0.2s, filter 0.2s, background-color 0.2s; }
 .big-btn:disabled { background-color: #d1d1d6; color: #8e8e93; box-shadow: none; cursor: not-allowed; }
 .big-btn:active, .option-btn:active, .btn:active { transform: scale(0.97); filter: brightness(0.95); }
 #mainMenuScreen .menu-content { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 400px; }
@@ -41,7 +43,7 @@ header { position: absolute; top: 0; left: 0; z-index: 10; display: flex; justif
 canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 #popCanvas { z-index: 5; pointer-events: none; }
 @keyframes wobble { 0%, 100% { transform: translateX(-50%) rotate(-2deg) scale(1); } 50% { transform: translateX(-50%) rotate(2deg) scale(1.05); } }
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999; opacity: 0; transition: opacity 0.5s; }
 .overlay-content { background: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
 .overlay-content h2 { font-size: 48px; margin: 0 0 10px 0; }
 .overlay-content p { font-size: 22px; margin: 5px 0; color: #333; }
@@ -53,7 +55,8 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <body class="no-select">
 
 <div id="splashScreen">
-    <img src="icon.png" alt="Logo Game">
+    <img src="https://placehold.co/300x150/a2f3b3/333333?text=Game+Kids" alt="Logo Game" onerror="this.onerror=null;this.src='https://placehold.co/300x150/cccccc/333333?text=Logo+Error';">
+    <button id="startExperienceBtn" class="start-experience-btn">Mulai</button>
 </div>
 
 <div id="mainMenuScreen" class="screen">
@@ -63,7 +66,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
       <div id="modeSelectionDisplay" class="selection-display"></div>
       <button id="levelBtn" class="big-btn main-menu-btn needs-selection">Level</button>
       <div id="levelSelectionDisplay" class="selection-display"></div>
-      <button id="startBtn" class="big-btn" disabled>Mulai</button>
+      <button id="startBtn" class="big-btn" disabled>Mulai Game</button>
     </div>
 </div>
   
@@ -82,7 +85,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         <div id="livesContainer"></div>
       </div>
       <div class="controls">
-        <button id="backToMenu" class="btn">Kembali</button>
+        <button id="backToMenu" class="btn">Menu</button>
       </div>
     </header>
     <div id="gameArea">
@@ -106,6 +109,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     </div>
 </div>
 
+<!-- Placeholder audio files. Replace with your actual audio files. -->
 <audio id="audio_opening" src="openinggame.wav" preload="auto"></audio>
 <audio id="audio_bgm" src="latarmusic.mp3" preload="auto" loop></audio>
 <audio id="audio_countdown" src="mulaigame.wav" preload="auto"></audio>
@@ -133,6 +137,7 @@ const levelSettings = { 1: { speed: 0.8, spawn: 1300 }, 2: { speed: 1.0, spawn: 
 
 // --- DOM Elements ---
 const splashScreen = document.getElementById('splashScreen');
+const startExperienceBtn = document.getElementById('startExperienceBtn');
 const mainMenuScreen = document.getElementById('mainMenuScreen');
 const selectionScreen = document.getElementById('selectionScreen');
 const gameScreen = document.getElementById('gameScreen');
@@ -164,6 +169,7 @@ const audioManager = {
     init() {
         if (this.isUnlocked) return;
         this.isUnlocked = true;
+        // This function is called by the first user interaction.
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         } catch (e) {
@@ -185,7 +191,10 @@ const audioManager = {
                 sound.loop = loop;
                 const playPromise = sound.play();
                 if (playPromise !== undefined) {
-                    playPromise.then(() => resolve()).catch(error => resolve());
+                    playPromise.then(() => resolve()).catch(error => {
+                        console.warn(`Audio play failed for ${soundName}:`, error);
+                        resolve(); // Resolve anyway to not block the game flow
+                    });
                 } else {
                     resolve();
                 }
@@ -226,7 +235,8 @@ function pickNewTarget() {
 function spawnObject() {
     const size = Math.random() * 20 + 30;
     let text;
-    if (Math.random() < 0.3) {
+    // Increase the chance of the target appearing
+    if (Math.random() < 0.35) {
         text = target;
     } else {
         let sourceArray;
@@ -257,11 +267,12 @@ function gameLoop(timestamp) {
         spawnObject();
         lastSpawnTime = timestamp;
     }
-    objects.forEach((o, index) => {
+    for (let i = objects.length - 1; i >= 0; i--) {
+        const o = objects[i];
         o.y += o.speed;
         if (o.y > H + o.r) {
-            objects.splice(index, 1);
-            return;
+            objects.splice(i, 1);
+            continue;
         }
         ctx.beginPath();
         ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
@@ -279,19 +290,23 @@ function gameLoop(timestamp) {
         ctx.fillText(o.text, o.x, o.y);
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
-    });
-    particles.forEach((p, index) => {
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
         p.life--;
-        if (p.life <= 0) particles.splice(index, 1);
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+            continue;
+        }
         pctx.beginPath();
         pctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         pctx.fillStyle = p.color;
         pctx.globalAlpha = p.life / 30;
         pctx.fill();
         pctx.globalAlpha = 1.0;
-    });
+    }
 }
 
 // --- Game Flow ---
@@ -301,7 +316,7 @@ function updateLivesDisplay() {
 }
 async function prepareAndStartGame() {
     dimOverlay.style.display = 'flex';
-    await sleep(100);
+    await sleep(10); // Allow display change to render
     dimOverlay.style.opacity = '1';
     await audioManager.play('countdown');
     await audioManager.play('tangkaptarget');
@@ -342,19 +357,23 @@ function triggerGameOver() {
     }
     finalScoreEl.textContent = score;
     finalCorrectEl.textContent = correctAnswers;
-    gameScreen.classList.remove('active');
     gameOverScreen.style.display = 'flex';
     setTimeout(() => {
         if (gameOverScreen) gameOverScreen.style.opacity = '1';
-    }, 100);
+    }, 10);
 }
 
 // --- Event Listeners ---
 function handleInteraction(e) {
     if (!running) return;
+    // Normalize touch and mouse events
+    const touch = e.touches ? e.touches[0] : e;
+    if (!touch.clientX) return;
+
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || (e.touches && e.touches[0].clientX) || 0) - rect.left;
-    const y = (e.clientY || (e.touches && e.touches[0].clientY) || 0) - rect.top;
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
     for (let i = objects.length - 1; i >= 0; i--) {
         const o = objects[i];
         const dist = Math.sqrt((x - o.x) ** 2 + (y - o.y) ** 2);
@@ -374,54 +393,49 @@ function handleInteraction(e) {
                 audioManager.playSFX('salah');
                 if (livesRemaining <= 0) {
                     triggerGameOver();
-                    return;
+                    return; // Exit function immediately on game over
                 }
             }
             objects.splice(i, 1);
-            break;
+            scoreEl.textContent = score;
+            return; // Only interact with the top-most object
         }
     }
-    scoreEl.textContent = score;
 }
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     let openingMusicFinished = false;
 
-    function showMainMenu() {
-        if (mainMenuScreen.classList.contains('active')) return;
+    // This is the main entry point after the page loads.
+    highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
+    highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function checkAndEnableStartButton() {
+        // The start button is enabled only when music is ready and selections are made.
+        startBtn.disabled = !(openingMusicFinished && mode && level);
+    }
+    
+    // Listen for the first click on the splash screen button
+    startExperienceBtn.addEventListener('click', () => {
+        // 1. Initialize the audio manager. This is the crucial step.
+        audioManager.init();
+        
+        // 2. Play the opening music.
+        audioManager.play('opening').then(() => {
+            openingMusicFinished = true;
+            checkAndEnableStartButton();
+        });
+
+        // 3. Smoothly transition from splash to main menu.
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
         }, 700);
-    }
-
-    function handleFirstInteraction() {
-        audioManager.init();
-        audioManager.play('opening').then(() => {
-            openingMusicFinished = true;
-            checkAndEnableStartButton();
-        });
-        showMainMenu();
-    }
-
-    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-    document.addEventListener('click', handleFirstInteraction, { once: true });
-    
-    setTimeout(() => {
-        showMainMenu();
-    }, 3000);
-
-    highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
-    highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    function checkAndEnableStartButton() {
-        startBtn.disabled = !(openingMusicFinished && mode && level);
-    }
+    }, { once: true }); // This listener only runs once.
 
     function showSelectionScreen(type) {
         mainMenuScreen.classList.remove('active');
@@ -432,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'Mode') {
             options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }];
         } else {
-            options = Array.from({ length: 10 }, (_, i) => ({ text: i + 1, value: i + 1 }));
+            options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 }));
         }
         options.forEach(opt => {
             const btn = document.createElement('button');
@@ -447,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     modeBtn.classList.remove('needs-selection');
                 } else {
                     level = opt.value;
-                    levelSelectionDisplay.textContent = `Level ${opt.text}`;
+                    levelSelectionDisplay.textContent = opt.text;
                     levelSelectionDisplay.classList.add('visible');
                     levelBtn.classList.remove('needs-selection');
                 }
@@ -461,16 +475,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modeBtn.addEventListener('click', () => { audioManager.playSFX('button'); showSelectionScreen('Mode'); });
     levelBtn.addEventListener('click', () => { audioManager.playSFX('button'); showSelectionScreen('Level'); });
-    backToMainBtn.addEventListener('click', () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); });
+    backToMainBtn.addEventListener('click', () => { audioManager.playSFX('button'); selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); });
     startBtn.addEventListener('click', () => { if (!startBtn.disabled) { audioManager.playSFX('button'); startGameFlow(); } });
     
     function goToMenu() {
         audioManager.stopAll();
+        // Hide game over screen if it's visible
         gameOverScreen.style.opacity = '0';
         setTimeout(() => {
             gameOverScreen.style.display = 'none';
             gameScreen.classList.remove('active');
             mainMenuScreen.classList.add('active');
+            // Replay opening music for menu ambiance
             audioManager.play('opening').then(() => {
                 openingMusicFinished = true;
                 checkAndEnableStartButton();
@@ -489,17 +505,20 @@ document.addEventListener('DOMContentLoaded', () => {
         goToMenu(); 
     });
     ulangiBtn.addEventListener('click', () => { 
-        audioManager.stopAll(); 
+        audioManager.playSFX('button');
         gameOverScreen.style.opacity = '0'; 
         setTimeout(() => { 
             gameOverScreen.style.display = 'none'; 
             startGameFlow(); 
         }, 500); 
     });
-    menuBtn.addEventListener('click', goToMenu);
+    menuBtn.addEventListener('click', () => {
+        audioManager.playSFX('button');
+        goToMenu();
+    });
     
     canvas.addEventListener('mousedown', handleInteraction);
-    canvas.addEventListener('touchstart', handleInteraction);
+    canvas.addEventListener('touchstart', handleInteraction, { passive: true });
 });
 </script>
 
