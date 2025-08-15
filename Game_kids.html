@@ -12,11 +12,9 @@
 html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', cursive; background: #f0f2f5; overflow: hidden; touch-action: none; }
 .no-select { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 
-/* Splash Screen */
-#splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.7s; }
+/* Splash Screen - Sekarang tanpa tombol */
+#splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1s ease-out; }
 #splashScreen img { width: 300px; max-width: 80%; }
-#splashScreen .start-experience-btn { margin-top: 30px; font-size: 32px; padding: 20px 50px; border: none; border-radius: 20px; background-color: #2ECC71; color: white; cursor: pointer; box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); transition: transform 0.2s, filter 0.2s; }
-#splashScreen .start-experience-btn:active { transform: scale(0.96); filter: brightness(0.9); }
 
 .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 15px; box-sizing: border-box; text-align: center; }
 .screen.active { display: flex; }
@@ -55,8 +53,8 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <body class="no-select">
 
 <div id="splashScreen">
-    <img src="https://placehold.co/300x150/a2f3b3/333333?text=Game+Anak" alt="Logo Game" onerror="this.onerror=null;this.src='https://placehold.co/300x150/cccccc/333333?text=Logo+Error';">
-    <button id="startExperienceBtn" class="start-experience-btn">Mulai</button>
+    <!-- PASTIKAN NAMA FILE 'icon.png' SESUAI DENGAN NAMA FILE LOGO ANDA -->
+    <img src="icon.png" alt="Logo Game" onerror="this.onerror=null;this.src='https://placehold.co/300x150/cccccc/333333?text=Logo+Error';">
 </div>
 
 <div id="mainMenuScreen" class="screen">
@@ -137,7 +135,6 @@ const levelSettings = { 1: { speed: 0.8, spawn: 1300 }, 2: { speed: 1.0, spawn: 
 
 // --- DOM Elements ---
 const splashScreen = document.getElementById('splashScreen');
-const startExperienceBtn = document.getElementById('startExperienceBtn');
 const mainMenuScreen = document.getElementById('mainMenuScreen');
 const selectionScreen = document.getElementById('selectionScreen');
 const gameScreen = document.getElementById('gameScreen');
@@ -348,19 +345,41 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    function checkAndEnableStartButton() {
-        startBtn.disabled = !(mode && level);
-    }
-    
-    startExperienceBtn.addEventListener('click', () => {
-        audioManager.init();
-        audioManager.play('opening');
+    // Otomatis pindah dari splash screen ke menu utama setelah 3 detik
+    setTimeout(() => {
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
-        }, 700);
-    }, { once: true });
+        }, 1000); // Waktu untuk fade out
+    }, 3000); // Waktu menampilkan splash screen
+
+    function checkAndEnableStartButton() {
+        startBtn.disabled = !(mode && level);
+    }
+    
+    const actions = {
+        modeBtn: () => { showSelectionScreen('Mode'); },
+        levelBtn: () => { showSelectionScreen('Level'); },
+        startBtn: () => { if (!startBtn.disabled) { startGameFlow(); } },
+        backToMainBtn: () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); },
+        backToMenu: () => {
+            running = false; cancelAnimationFrame(animationFrameId);
+            if (score > highScore) {
+                highScore = score; localStorage.setItem('gameKidsHighScore', highScore);
+                highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
+            }
+            goToMenu();
+        },
+        ulangiBtn: () => {
+            gameOverScreen.style.opacity = '0';
+            setTimeout(() => {
+                gameOverScreen.style.display = 'none';
+                startGameFlow();
+            }, 500);
+        },
+        menuBtn: () => { goToMenu(); }
+    };
 
     function showSelectionScreen(type) {
         mainMenuScreen.classList.remove('active');
@@ -371,4 +390,84 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'Mode') {
             options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }];
         } else {
-            options = 
+            options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 }));
+        }
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt.text;
+            btn.dataset.selectionType = type;
+            btn.dataset.selectionValue = opt.value;
+            btn.dataset.selectionText = opt.text;
+            selectionOptions.appendChild(btn);
+        });
+    }
+
+    function handleSelection(target) {
+        const type = target.dataset.selectionType;
+        const value = target.dataset.selectionValue;
+        const text = target.dataset.selectionText;
+        
+        if (type === 'Mode') {
+            mode = value; modeSelectionDisplay.textContent = text;
+            modeSelectionDisplay.classList.add('visible'); modeBtn.classList.remove('needs-selection');
+        } else {
+            level = value; levelSelectionDisplay.textContent = `Level ${value}`;
+            levelSelectionDisplay.classList.add('visible'); levelBtn.classList.remove('needs-selection');
+        }
+        selectionScreen.classList.remove('active');
+        mainMenuScreen.classList.add('active');
+        checkAndEnableStartButton();
+    }
+    
+    function goToMenu() {
+        audioManager.stopAll();
+        gameOverScreen.style.opacity = '0';
+        setTimeout(() => {
+            gameOverScreen.style.display = 'none';
+            gameScreen.classList.remove('active');
+            mainMenuScreen.classList.add('active');
+            // Musik opening akan diputar lagi saat user pertama kali menyentuh tombol di menu
+        }, 500);
+    }
+    
+    // ===================================================================
+    // PERBAIKAN UTAMA UNTUK ANDROID WEBVIEW (EVENT DELEGATION)
+    // ===================================================================
+    document.body.addEventListener('touchstart', function(e) {
+        // Mencegah perilaku default seperti zoom atau scroll. SANGAT PENTING.
+        e.preventDefault();
+
+        // KUNCI UTAMA: Inisialisasi dan putar musik pada sentuhan PERTAMA KALI.
+        if (!audioManager.isUnlocked) {
+            audioManager.init();
+            audioManager.play('opening'); // Putar musik pembuka
+        }
+
+        let target = e.target;
+
+        // Cek apakah yang disentuh adalah tombol yang memiliki aksi
+        if (actions[target.id]) {
+            audioManager.playSFX('button');
+            actions[target.id]();
+        } 
+        // Cek apakah yang disentuh adalah tombol pilihan di layar selection
+        else if (target.classList.contains('option-btn')) {
+            audioManager.playSFX('button');
+            handleSelection(target);
+        }
+        // Cek apakah yang disentuh adalah canvas game
+        else if (target.id === 'gameCanvas') {
+            handleInteraction(e);
+        }
+
+    }, { passive: false });
+    // ===================================================================
+});
+</script>
+
+<div class="copyright-footer">
+  <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
+</div>
+</body>
+</html>
