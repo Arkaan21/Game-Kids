@@ -120,7 +120,6 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         <h2 style="color: #E74C3C;">Game Over</h2>
         <p>Skor Akhir: <span id="finalScore">0</span></p>
         <p>Jawaban Benar: <span id="finalCorrect">0</span></p>
-        <!-- BARU: Pastikan baris ini ada -->
         <p>Target Terlewat: <span id="finalMissed">0</span></p>
         <div class="overlay-buttons">
             <button id="ulangiBtn" class="big-btn">Ulangi</button>
@@ -165,7 +164,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 // --- State & Data ---
 let mode = null, level = null, target = 'A';
 let score = 0, correctAnswers = 0, livesRemaining = 5, highScore = 0;
-let missedTargets = 0; // BARU: Pastikan variabel ini ada
+let missedTargets = 0;
 let running = false, objects = [], particles = [];
 let animationFrameId;
 const animals = ['🐶','🐯','🐻','🦁','🐵','🐼','🐰','🐸','🐷','🐮'];
@@ -208,13 +207,17 @@ const livesContainer = document.getElementById('livesContainer');
 const highScoreEl = document.getElementById('highScoreDisplay');
 const finalScoreEl = document.getElementById('finalScore');
 const finalCorrectEl = document.getElementById('finalCorrect');
-const finalMissedEl = document.getElementById('finalMissed'); // BARU: Pastikan elemen ini diambil
-const popCanvas = document.getElementById('popCanvas'), pctx = popCanvas.getContext('2d');
-const canvas = document.getElementById('gameCanvas'), ctx = canvas.getContext('2d');
+const finalMissedEl = document.getElementById('finalMissed');
+const canvas = document.getElementById('gameCanvas');
+const popCanvas = document.getElementById('popCanvas');
 const modeSelectionDisplay = document.getElementById('modeSelectionDisplay');
 const levelSelectionDisplay = document.getElementById('levelSelectionDisplay');
 const selectionTitle = document.getElementById('selectionTitle');
 const selectionOptions = document.getElementById('selectionOptions');
+// PERBAIKAN: Mendefinisikan context setelah semua elemen diambil
+const ctx = canvas.getContext('2d');
+const pctx = popCanvas.getContext('2d');
+
 
 // --- Preload Logo Image ---
 const logoImg = new Image();
@@ -249,7 +252,6 @@ function gameLoop(timestamp) {
         const o = objects[i];
         o.y += o.speed;
         if (o.y > H + o.r) {
-            // BARU: Logika untuk menghitung target yang terlewat
             if (o.text === target) {
                 missedTargets++;
             }
@@ -268,3 +270,6 @@ function triggerGameOver() {
     running = false; cancelAnimationFrame(animationFrameId); audioManager.stopAll(); audioManager.playSFX('gameover');
     if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; }
     finalScoreEl.textContent = score;
+    finalCorrectEl.textContent = correctAnswers;
+    finalMissedEl.textContent = missedTargets;
+    gameO
