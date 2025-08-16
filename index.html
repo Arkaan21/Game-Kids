@@ -12,27 +12,24 @@
 html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', cursive; background: #f0f2f5; overflow: hidden; touch-action: none; }
 .no-select { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 
-/* Splash Screen dengan Teks Petunjuk */
-#splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.7s ease-out; cursor: pointer; }
-#splashScreen img { width: 300px; max-width: 80%; pointer-events: none; }
-.splash-text {
-    margin-top: 30px;
-    font-size: 24px;
-    color: #888;
-    pointer-events: none;
-    animation: pulse-text 2s infinite;
+/* Splash Screen */
+#splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.7s ease-out; }
+#splashScreen img { width: 350px; max-width: 85%; }
+.start-experience-btn {
+    margin-top: 40px; font-size: 36px; padding: 20px 60px; border: none;
+    border-radius: 50px; background: linear-gradient(45deg, #2ECC71, #28B463);
+    color: white; cursor: pointer; box-shadow: 0 8px 15px rgba(46, 204, 113, 0.4);
+    transition: all 0.2s ease-in-out; animation: pulse-start-btn 2s infinite;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
-@keyframes pulse-text {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-}
+.start-experience-btn:active { transform: scale(0.95); box-shadow: 0 4px 10px rgba(46, 204, 113, 0.5); }
+@keyframes pulse-start-btn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-
+/* Layar & Tombol Umum */
 .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 15px; box-sizing: border-box; text-align: center; }
 .screen.active { display: flex; }
-.big-btn { font-size: 24px; padding: 20px 40px; border: none; border-radius: 16px; background-color: #007AFF; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: transform 0.2s, filter 0.2s, background-color 0.2s; }
-.big-btn:disabled { background-color: #d1d1d6; color: #8e8e93; box-shadow: none; cursor: not-allowed; }
+.big-btn { font-size: 24px; padding: 20px 40px; border: none; border-radius: 16px; background-color: #007AFF; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: transform 0.2s, filter 0.2s, background-color 0.3s; }
+.big-btn:disabled { background-color: #b0bec5; color: #607d8b; box-shadow: none; cursor: not-allowed; animation: none; }
 .big-btn:active, .option-btn:active, .btn:active { transform: scale(0.97); filter: brightness(0.95); }
 #mainMenuScreen .menu-content { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 400px; }
 .main-menu-btn { width: 100%; font-size: 32px; padding: 25px; }
@@ -61,13 +58,23 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .overlay-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
 .overlay-buttons .big-btn { font-size: 20px; padding: 15px 20px; flex-grow: 1; min-width: 100px; }
 .copyright-footer { position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: #aaaaaa; font-family: Arial, sans-serif; z-index: 1001; }
+
+/* Gaya untuk Fitur Selfie */
+#selfieOverlay { background: #333; }
+#selfieContainer { position: relative; width: 90vw; max-width: 400px; aspect-ratio: 3 / 4; background: #000; border-radius: 20px; overflow: hidden; }
+#selfieVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); /* Cermin */ }
+#finalSelfieCanvas { width: 100%; height: 100%; background: #555; }
+.selfie-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; width: 100%; }
+.selfie-btn-row { display: flex; gap: 10px; }
+.selfie-btn { font-size: 18px; padding: 12px 20px; border-radius: 12px; }
+#closeSelfieBtn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: white; border: none; font-size: 24px; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; line-height: 1; padding-bottom: 4px; }
 </style>
 </head>
 <body class="no-select">
 
 <div id="splashScreen">
     <img src="icon.png" alt="Logo Game" onerror="this.onerror=null;this.src='https://placehold.co/300x150/cccccc/333333?text=Logo+Error';">
-    <p class="splash-text">Klik layar di mana saja untuk memulai</p>
+    <button id="startExperienceBtn" class="start-experience-btn">Mulai</button>
 </div>
 
 <div id="mainMenuScreen" class="screen">
@@ -115,10 +122,32 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         <p>Jawaban Benar: <span id="finalCorrect">0</span></p>
         <div class="overlay-buttons">
             <button id="ulangiBtn" class="big-btn">Ulangi</button>
+            <button id="selfieBtn" class="big-btn" style="background-color: #9B59B6;">Foto Selfie</button>
             <button id="menuBtn" class="big-btn">Menu</button>
         </div>
     </div>
 </div>
+
+<!-- Overlay Baru untuk Fitur Selfie -->
+<div id="selfieOverlay" class="overlay">
+    <div id="selfieContainer">
+        <video id="selfieVideo" playsinline autoplay></video>
+        <canvas id="finalSelfieCanvas"></canvas>
+    </div>
+    <div class="selfie-controls">
+        <div id="captureControls">
+            <button id="captureBtn" class="big-btn selfie-btn">Ambil Foto</button>
+        </div>
+        <div id="resultControls" style="display: none;">
+            <div class="selfie-btn-row">
+                <button id="retakeBtn" class="big-btn selfie-btn" style="background-color: #E67E22;">Ulangi Foto</button>
+                <button id="saveBtn" class="big-btn selfie-btn" style="background-color: #2ECC71;">Simpan</button>
+            </div>
+        </div>
+    </div>
+    <button id="closeSelfieBtn">&times;</button>
+</div>
+<canvas id="captureCanvas" style="display:none;"></canvas>
 
 <audio id="audio_opening" src="openinggame.wav" preload="auto"></audio>
 <audio id="audio_bgm" src="latarmusic.mp3" preload="auto" loop></audio>
@@ -128,6 +157,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <audio id="audio_benar" src="tebakbenar.wav" preload="auto"></audio>
 <audio id="audio_salah" src="tebaksalah.wav" preload="auto"></audio>
 <audio id="audio_gameover" src="gameover.wav" preload="auto"></audio>
+<audio id="audio_tangkaptarget" src="tangkaptarget.wav" preload="auto" loop></audio>
 <audio id="audio_targetbaru" src="targetbaru.wav" preload="auto"></audio>
 
 <script>
@@ -146,7 +176,21 @@ const levelSettings = { 1: { speed: 0.8, spawn: 1300 }, 2: { speed: 1.0, spawn: 
 
 // --- DOM Elements ---
 const splashScreen = document.getElementById('splashScreen');
+const startExperienceBtn = document.getElementById('startExperienceBtn');
 const mainMenuScreen = document.getElementById('mainMenuScreen');
+// ... (sisa elemen DOM lainnya)
+const selfieBtn = document.getElementById('selfieBtn');
+const selfieOverlay = document.getElementById('selfieOverlay');
+const selfieVideo = document.getElementById('selfieVideo');
+const finalSelfieCanvas = document.getElementById('finalSelfieCanvas');
+const captureCanvas = document.getElementById('captureCanvas');
+const captureBtn = document.getElementById('captureBtn');
+const retakeBtn = document.getElementById('retakeBtn');
+const saveBtn = document.getElementById('saveBtn');
+const closeSelfieBtn = document.getElementById('closeSelfieBtn');
+const captureControls = document.getElementById('captureControls');
+const resultControls = document.getElementById('resultControls');
+// ... (sisa elemen DOM lainnya)
 const selectionScreen = document.getElementById('selectionScreen');
 const gameScreen = document.getElementById('gameScreen');
 const gameOverScreen = document.getElementById('gameOverScreen');
@@ -171,62 +215,92 @@ const levelSelectionDisplay = document.getElementById('levelSelectionDisplay');
 const selectionTitle = document.getElementById('selectionTitle');
 const selectionOptions = document.getElementById('selectionOptions');
 
+// --- Preload Logo Image ---
+const logoImg = new Image();
+logoImg.src = 'icon.png'; // Pastikan nama file ini benar
+
+// --- Vibration Manager ---
+const vibrate = (duration) => { if ('vibrate' in navigator) { navigator.vibrate(duration); } };
+
 // --- Audio Manager ---
 const audioManager = {
     audioContext: null, sounds: {}, isUnlocked: false,
-    init() {
-        if (this.isUnlocked) return;
-        this.isUnlocked = true;
-        try { this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
-        catch (e) { console.error("Web Audio API is not supported in this browser"); }
-        // Menghapus 'tangkaptarget' dari daftar suara
-        const soundNames = ['opening', 'bgm', 'countdown', 'pop', 'button', 'benar', 'salah', 'gameover', 'targetbaru'];
-        soundNames.forEach(name => { this.sounds[name] = document.getElementById(`audio_${name}`); });
-    },
+    init() { if (this.isUnlocked) return; this.isUnlocked = true; try { this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Web Audio API is not supported in this browser"); } const soundNames = ['opening', 'bgm', 'countdown', 'pop', 'button', 'benar', 'salah', 'gameover', 'tangkaptarget', 'targetbaru']; soundNames.forEach(name => { this.sounds[name] = document.getElementById(`audio_${name}`); }); },
+    stop(soundName) { if (!this.isUnlocked || !this.sounds[soundName]) return; this.sounds[soundName].pause(); this.sounds[soundName].currentTime = 0; },
     stopAll() { if (!this.isUnlocked) return; Object.values(this.sounds).forEach(s => { if (s) { s.pause(); s.currentTime = 0; } }); },
-    play(soundName, loop = false) {
-        if (!this.isUnlocked) return Promise.resolve();
-        return new Promise((resolve) => {
-            const sound = this.sounds[soundName];
-            if (sound) {
-                sound.currentTime = 0; sound.loop = loop; const playPromise = sound.play();
-                if (playPromise !== undefined) { playPromise.then(resolve).catch(error => { console.warn(`Audio play failed for ${soundName}:`, error); resolve(); }); }
-                else { resolve(); }
-            } else { resolve(); }
-        });
-    },
-    playMusic(musicName) { this.stopAll(); return this.play(musicName, true); },
-    playSFX(sfxName) { this.play(sfxName, false); }
+    play(soundName, loop = false) { if (!this.isUnlocked) return Promise.resolve(); return new Promise((resolve) => { const sound = this.sounds[soundName]; if (sound) { sound.currentTime = 0; sound.loop = loop; const playPromise = sound.play(); if (playPromise !== undefined) { playPromise.then(resolve).catch(error => { console.warn(`Audio play failed for ${soundName}:`, error); resolve(); }); } else { resolve(); } } else { resolve(); } }); },
+    playInterrupt(soundName) { if (soundName === 'benar') this.stop('salah'); if (soundName === 'salah') this.stop('benar'); return this.play(soundName); }
 };
 
 // --- Canvas & Game Logic ---
 let W, H, dpr;
 function resizeCanvas() { const gameArea = document.getElementById('gameArea'); W = gameArea.clientWidth; H = gameArea.clientHeight; dpr = window.devicePixelRatio || 1; [canvas, popCanvas].forEach(c => { c.width = W * dpr; c.height = H * dpr; }); [ctx, pctx].forEach(c => c.setTransform(dpr, 0, 0, dpr, 0, 0)); }
-function pickNewTarget() { let sourceArray = allChars; if (mode === 'letters') sourceArray = letters; else if (mode === 'numbers') sourceArray = numbers; else if (mode === 'animals') sourceArray = animals; else if (mode === 'hijaiyah') sourceArray = hijaiyah; target = sourceArray[Math.floor(Math.random() * sourceArray.length)]; targetEl.textContent = target; targetEl.style.backgroundColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)]; audioManager.playSFX('targetbaru'); }
+function pickNewTarget() { audioManager.stop('tangkaptarget'); audioManager.play('tangkaptarget', true); audioManager.play('targetbaru'); let sourceArray = allChars; if (mode === 'letters') sourceArray = letters; else if (mode === 'numbers') sourceArray = numbers; else if (mode === 'animals') sourceArray = animals; else if (mode === 'hijaiyah') sourceArray = hijaiyah; target = sourceArray[Math.floor(Math.random() * sourceArray.length)]; targetEl.textContent = target; targetEl.style.backgroundColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)]; }
 function spawnObject() { const size = Math.random() * 20 + 30; let text; if (Math.random() < 0.35) { text = target; } else { let sourceArray = allChars; if (mode === 'letters') sourceArray = letters; else if (mode === 'numbers') sourceArray = numbers; else if (mode === 'animals') sourceArray = animals; else if (mode === 'hijaiyah') sourceArray = hijaiyah; text = sourceArray[Math.floor(Math.random() * sourceArray.length)]; } const color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)]; objects.push({ x: Math.random() * (W - size * 2) + size, y: -size, r: size, text, speed: Math.random() * 0.5 + levelSettings[level].speed, color: color }); }
 function createPopEffect(x, y) { for (let i = 0; i < 15; i++) { particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, radius: Math.random() * 3 + 1, life: 30, color: bubbleColors[Math.floor(Math.random() * bubbleColors.length)] }); } }
 let lastSpawnTime = 0;
 function gameLoop(timestamp) { if (!running) return; animationFrameId = requestAnimationFrame(gameLoop); ctx.clearRect(0, 0, W, H); pctx.clearRect(0, 0, W, H); if (timestamp - lastSpawnTime > levelSettings[level].spawn) { spawnObject(); lastSpawnTime = timestamp; } for (let i = objects.length - 1; i >= 0; i--) { const o = objects[i]; o.y += o.speed; if (o.y > H + o.r) { objects.splice(i, 1); continue; } ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fillStyle = o.color; ctx.fill(); ctx.strokeStyle = 'white'; ctx.lineWidth = 4; ctx.stroke(); ctx.fillStyle = 'white'; ctx.font = `${o.r * 0.8}px 'Luckiest Guy'`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 3; ctx.fillText(o.text, o.x, o.y); ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; } for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--; if (p.life <= 0) { particles.splice(i, 1); continue; } pctx.beginPath(); pctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); pctx.fillStyle = p.color; pctx.globalAlpha = p.life / 30; pctx.fill(); pctx.globalAlpha = 1.0; } }
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 function updateLivesDisplay() { livesContainer.innerHTML = '❤️'.repeat(livesRemaining); }
-async function prepareAndStartGame() {
-    dimOverlay.style.display = 'flex';
-    await sleep(10);
-    dimOverlay.style.opacity = '1';
-    await audioManager.play('countdown');
-    // Menghapus pemutaran suara 'tangkaptarget'
-    dimOverlay.style.opacity = '0';
-    await sleep(500);
-    dimOverlay.style.display = 'none';
-    running = true;
-    pickNewTarget();
-    lastSpawnTime = performance.now();
-    animationFrameId = requestAnimationFrame(gameLoop);
-    audioManager.playMusic('bgm');
-}
-function startGameFlow() { audioManager.stopAll(); mainMenuScreen.classList.remove('active'); gameScreen.classList.add('active'); requestAnimationFrame(() => { resizeCanvas(); score = 0; correctAnswers = 0; livesRemaining = 5; objects = []; particles = []; scoreEl.textContent = score; updateLivesDisplay(); prepareAndStartGame(); }); }
+async function prepareAndStartGame() { audioManager.stopAll(); dimOverlay.style.display = 'flex'; await sleep(10); dimOverlay.style.opacity = '1'; const countdownAudio = document.getElementById('audio_countdown'); countdownAudio.play(); countdownAudio.onended = async () => { dimOverlay.style.opacity = '0'; await sleep(500); dimOverlay.style.display = 'none'; running = true; pickNewTarget(); lastSpawnTime = performance.now(); animationFrameId = requestAnimationFrame(gameLoop); audioManager.play('bgm', true); }; }
+function startGameFlow() { mainMenuScreen.classList.remove('active'); gameScreen.classList.add('active'); requestAnimationFrame(() => { resizeCanvas(); score = 0; correctAnswers = 0; livesRemaining = 5; objects = []; particles = []; scoreEl.textContent = score; updateLivesDisplay(); prepareAndStartGame(); }); }
 function triggerGameOver() { running = false; cancelAnimationFrame(animationFrameId); audioManager.stopAll(); audioManager.play('gameover'); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } finalScoreEl.textContent = score; finalCorrectEl.textContent = correctAnswers; gameOverScreen.style.display = 'flex'; setTimeout(() => { if (gameOverScreen) gameOverScreen.style.opacity = '1'; }, 10); }
-function handleInteraction(e) { if (!running) return; const touch = e.touches ? e.touches[0] : e; if (!touch.clientX) return; const rect = canvas.getBoundingClientRect(); const x = touch.clientX - rect.left; const y = touch.clientY - rect.top; for (let i = objects.length - 1; i >= 0; i--) { const o = objects[i]; const dist = Math.sqrt((x - o.x) ** 2 + (y - o.y) ** 2); if (dist < o.r) { audioManager.playSFX('pop'); createPopEffect(o.x, o.y); if (o.text === target) { score += 25; correctAnswers++; audioManager.playSFX('benar'); pickNewTarget(); } else { score -= 15; if (score < 0) score = 0; livesRemaining--; updateLivesDisplay(); audioManager.playSFX('salah'); if (livesRemaining <= 0) { triggerGameOver(); return; } } objects.splice(i, 1); scoreEl.textContent = score; return; } } }
+function handleInteraction(e) { if (!running) return; vibrate(50); audioManager.play('pop'); audioManager.stop('tangkaptarget'); const touch = e.touches ? e.touches[0] : e; if (!touch.clientX) return; const rect = canvas.getBoundingClientRect(); const x = touch.clientX - rect.left; const y = touch.clientY - rect.top; let hit = false; for (let i = objects.length - 1; i >= 0; i--) { const o = objects[i]; const dist = Math.sqrt((x - o.x) ** 2 + (y - o.y) ** 2); if (dist < o.r) { hit = true; createPopEffect(o.x, o.y); if (o.text === target) { score += 25; correctAnswers++; audioManager.playInterrupt('benar'); pickNewTarget(); } else { score -= 15; if (score < 0) score = 0; livesRemaining--; updateLivesDisplay(); audioManager.playInterrupt('salah'); if (livesRemaining <= 0) { triggerGameOver(); return; } } objects.splice(i, 1); scoreEl.textContent = score; return; } } }
+
+// --- Selfie Feature Logic ---
+let stream;
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        selfieVideo.srcObject = stream;
+    } catch (err) {
+        console.error("Error accessing camera: ", err);
+        alert("Tidak bisa mengakses kamera. Pastikan Anda memberikan izin.");
+    }
+}
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+}
+function drawFramedPhoto() {
+    const finalCtx = finalSelfieCanvas.getContext('2d');
+    const capCtx = captureCanvas.getContext('2d');
+    const w = finalSelfieCanvas.width;
+    const h = finalSelfieCanvas.height;
+
+    // Gambar selfie (dicerminkan kembali agar normal)
+    finalCtx.save();
+    finalCtx.scale(-1, 1);
+    finalCtx.drawImage(captureCanvas, -w, 0, w, h);
+    finalCtx.restore();
+
+    // Gambar bingkai
+    const borderWidth = 20;
+    finalCtx.fillStyle = '#3498DB';
+    finalCtx.fillRect(0, 0, w, borderWidth);
+    finalCtx.fillRect(0, h - borderWidth, w, borderWidth);
+    finalCtx.fillRect(0, 0, borderWidth, h);
+    finalCtx.fillRect(w - borderWidth, 0, borderWidth, h);
+
+    // Gambar logo
+    const logoSize = w * 0.2;
+    finalCtx.drawImage(logoImg, w - logoSize - 30, 30, logoSize, logoSize);
+
+    // Gambar Teks
+    finalCtx.font = "bold 48px 'Luckiest Guy'";
+    finalCtx.textAlign = 'left';
+    finalCtx.fillStyle = 'white';
+    finalCtx.strokeStyle = 'black';
+    finalCtx.lineWidth = 4;
+
+    const scoreText = `Skor: ${score}`;
+    const correctText = `Benar: ${correctAnswers}`;
+    finalCtx.strokeText(scoreText, 35, h - 80);
+    finalCtx.fillText(scoreText, 35, h - 80);
+    finalCtx.strokeText(correctText, 35, h - 30);
+    finalCtx.fillText(correctText, 35, h - 30);
+}
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -235,35 +309,39 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // ===================================================================
-    // KODE BARU UNTUK SOLUSI APK ANDROID
-    // ===================================================================
-    
-    function initGameFromApp() {
+    function initGame() {
         if (document.body.dataset.initialized) return;
         document.body.dataset.initialized = 'true';
-
+        vibrate(30);
         audioManager.init();
-        audioManager.play('opening');
-
+        
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
+            
+            const openingAudio = document.getElementById('audio_opening');
+            openingAudio.play();
+            openingAudio.onended = () => {
+                checkAndEnableStartButton();
+            };
         }, 700);
-
         setupEventListeners();
     }
 
-    splashScreen.addEventListener('click', initGameFromApp, { once: true });
-    splashScreen.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        initGameFromApp();
-    }, { once: true });
+    startExperienceBtn.addEventListener('click', initGame, { once: true });
+    startExperienceBtn.addEventListener('touchstart', (e) => { e.preventDefault(); initGame(); }, { once: true });
 
-    // ===================================================================
-
-    function checkAndEnableStartButton() { startBtn.disabled = !(mode && level); }
+    function checkAndEnableStartButton() {
+        if (mode && level) {
+            const openingAudio = document.getElementById('audio_opening');
+            if (openingAudio.paused || openingAudio.ended) {
+                startBtn.disabled = false;
+            }
+        } else {
+            startBtn.disabled = true;
+        }
+    }
     
     function setupEventListeners() {
         const actions = {
@@ -273,15 +351,67 @@ document.addEventListener('DOMContentLoaded', () => {
             backToMainBtn: () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); },
             backToMenu: () => { running = false; cancelAnimationFrame(animationFrameId); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } goToMenu(); },
             ulangiBtn: () => { gameOverScreen.style.opacity = '0'; setTimeout(() => { gameOverScreen.style.display = 'none'; startGameFlow(); }, 500); },
-            menuBtn: () => { goToMenu(); }
+            menuBtn: () => { goToMenu(); },
+            selfieBtn: () => {
+                selfieOverlay.style.display = 'flex';
+                setTimeout(() => selfieOverlay.style.opacity = '1', 10);
+                startCamera();
+                // Reset tampilan selfie
+                selfieVideo.style.display = 'block';
+                finalSelfieCanvas.style.display = 'none';
+                captureControls.style.display = 'flex';
+                resultControls.style.display = 'none';
+            }
         };
         document.body.addEventListener('click', function(e) {
             let target = e.target;
-            if (actions[target.id]) { audioManager.playSFX('button'); actions[target.id](); }
-            else if (target.classList.contains('option-btn')) { audioManager.playSFX('button'); handleSelection(target); }
+            if (actions[target.id]) { vibrate(30); audioManager.play('button'); actions[target.id](); }
+            else if (target.classList.contains('option-btn')) { vibrate(30); audioManager.play('button'); handleSelection(target); }
         });
         canvas.addEventListener('mousedown', handleInteraction);
         canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+
+        // Event listeners untuk fitur selfie
+        closeSelfieBtn.addEventListener('click', () => {
+            vibrate(30);
+            selfieOverlay.style.opacity = '0';
+            setTimeout(() => selfieOverlay.style.display = 'none', 500);
+            stopCamera();
+        });
+        captureBtn.addEventListener('click', () => {
+            vibrate(50);
+            const capCtx = captureCanvas.getContext('2d');
+            const finalCtx = finalSelfieCanvas.getContext('2d');
+            const aspectRatio = selfieVideo.videoWidth / selfieVideo.videoHeight;
+            const w = 600; // Resolusi tangkapan
+            const h = w / aspectRatio;
+            captureCanvas.width = w;
+            captureCanvas.height = h;
+            finalSelfieCanvas.width = w;
+            finalSelfieCanvas.height = h;
+
+            capCtx.drawImage(selfieVideo, 0, 0, w, h);
+            drawFramedPhoto();
+
+            selfieVideo.style.display = 'none';
+            finalSelfieCanvas.style.display = 'block';
+            captureControls.style.display = 'none';
+            resultControls.style.display = 'flex';
+        });
+        retakeBtn.addEventListener('click', () => {
+            vibrate(30);
+            selfieVideo.style.display = 'block';
+            finalSelfieCanvas.style.display = 'none';
+            captureControls.style.display = 'flex';
+            resultControls.style.display = 'none';
+        });
+        saveBtn.addEventListener('click', () => {
+            vibrate(30);
+            const link = document.createElement('a');
+            link.download = `GameKids_Skor_${score}.jpg`;
+            link.href = finalSelfieCanvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        });
     }
 
     function showSelectionScreen(type) {
@@ -305,12 +435,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function goToMenu() {
         audioManager.stopAll();
-        audioManager.play('opening');
         gameOverScreen.style.opacity = '0';
         setTimeout(() => {
             gameOverScreen.style.display = 'none';
             gameScreen.classList.remove('active');
             mainMenuScreen.classList.add('active');
+            const openingAudio = document.getElementById('audio_opening');
+            openingAudio.play();
+            startBtn.disabled = true;
+            openingAudio.onended = () => {
+                checkAndEnableStartButton();
+            };
         }, 500);
     }
 });
