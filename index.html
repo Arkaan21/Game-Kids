@@ -160,6 +160,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <audio id="audio_gameover" src="gameover.wav" preload="auto"></audio>
 <audio id="audio_targetbaru" src="targetbaru.wav" preload="auto"></audio>
 
+<!-- PERUBAHAN KUNCI: Memindahkan skrip ke akhir body -->
 <script>
 // --- State & Data ---
 let mode = null, level = null, target = 'A';
@@ -217,7 +218,6 @@ const selectionOptions = document.getElementById('selectionOptions');
 const ctx = canvas.getContext('2d');
 const pctx = popCanvas.getContext('2d');
 
-
 // --- Preload Logo Image ---
 const logoImg = new Image();
 logoImg.src = 'icon.png';
@@ -251,9 +251,7 @@ function gameLoop(timestamp) {
         const o = objects[i];
         o.y += o.speed;
         if (o.y > H + o.r) {
-            if (o.text === target) {
-                missedTargets++;
-            }
+            if (o.text === target) { missedTargets++; }
             objects.splice(i, 1);
             continue;
         }
@@ -301,106 +299,107 @@ function drawFramedPhoto() {
 }
 
 // --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-    highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
-    highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+// PERBAIKAN: Seluruh logika inisialisasi dipindahkan ke luar 'DOMContentLoaded'
+// dan diletakkan di akhir agar lebih andal.
 
-    function initGame() {
-        if (document.body.dataset.initialized) return;
-        document.body.dataset.initialized = 'true';
-        vibrate(30);
-        audioManager.init();
-        splashScreen.style.opacity = '0';
-        setTimeout(() => {
-            splashScreen.style.display = 'none';
-            mainMenuScreen.classList.add('active');
-            const openingAudio = document.getElementById('audio_opening');
-            audioManager.playMusic('opening');
-            openingAudio.onended = () => { checkAndEnableStartButton(); };
-        }, 700);
-        setupEventListeners();
-    }
+highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
+highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-    startExperienceBtn.addEventListener('click', initGame, { once: true });
-    startExperienceBtn.addEventListener('touchstart', (e) => { e.preventDefault(); initGame(); }, { once: true });
+function initGame() {
+    if (document.body.dataset.initialized) return;
+    document.body.dataset.initialized = 'true';
+    vibrate(30);
+    audioManager.init();
+    splashScreen.style.opacity = '0';
+    setTimeout(() => {
+        splashScreen.style.display = 'none';
+        mainMenuScreen.classList.add('active');
+        const openingAudio = document.getElementById('audio_opening');
+        audioManager.playMusic('opening');
+        openingAudio.onended = () => { checkAndEnableStartButton(); };
+    }, 700);
+    setupEventListeners();
+}
 
-    function checkAndEnableStartButton() { if (mode && level) { const openingAudio = document.getElementById('audio_opening'); if (openingAudio.paused || openingAudio.ended) { startBtn.disabled = false; } } else { startBtn.disabled = true; } }
-    
-    function setupEventListeners() {
-        const actions = {
-            modeBtn: () => { showSelectionScreen('Mode'); },
-            levelBtn: () => { showSelectionScreen('Level'); },
-            startBtn: () => { if (!startBtn.disabled) { startGameFlow(); } },
-            backToMainBtn: () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); },
-            backToMenu: () => { running = false; cancelAnimationFrame(animationFrameId); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } goToMenu(); },
-            ulangiBtn: () => { gameOverScreen.style.opacity = '0'; setTimeout(() => { gameOverScreen.style.display = 'none'; startGameFlow(); }, 500); },
-            menuBtn: () => { goToMenu(); },
-            selfieBtn: () => {
-                selfieOverlay.style.display = 'flex'; setTimeout(() => selfieOverlay.style.opacity = '1', 10); startCamera();
-                selfieVideo.style.display = 'block'; finalSelfieCanvas.style.display = 'none'; captureControls.style.display = 'flex'; resultControls.style.display = 'none';
-            }
+startExperienceBtn.addEventListener('click', initGame, { once: true });
+startExperienceBtn.addEventListener('touchstart', (e) => { e.preventDefault(); initGame(); }, { once: true });
+
+function checkAndEnableStartButton() { if (mode && level) { const openingAudio = document.getElementById('audio_opening'); if (openingAudio.paused || openingAudio.ended) { startBtn.disabled = false; } } else { startBtn.disabled = true; } }
+
+function setupEventListeners() {
+    const actions = {
+        modeBtn: () => { showSelectionScreen('Mode'); },
+        levelBtn: () => { showSelectionScreen('Level'); },
+        startBtn: () => { if (!startBtn.disabled) { startGameFlow(); } },
+        backToMainBtn: () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); },
+        backToMenu: () => { running = false; cancelAnimationFrame(animationFrameId); if (score > highScore) { highScore = score; localStorage.setItem('gameKidsHighScore', highScore); highScoreEl.textContent = `Skor Tertinggi: ${highScore}`; } goToMenu(); },
+        ulangiBtn: () => { gameOverScreen.style.opacity = '0'; setTimeout(() => { gameOverScreen.style.display = 'none'; startGameFlow(); }, 500); },
+        menuBtn: () => { goToMenu(); },
+        selfieBtn: () => {
+            selfieOverlay.style.display = 'flex'; setTimeout(() => selfieOverlay.style.opacity = '1', 10); startCamera();
+            selfieVideo.style.display = 'block'; finalSelfieCanvas.style.display = 'none'; captureControls.style.display = 'flex'; resultControls.style.display = 'none';
+        }
+    };
+    document.body.addEventListener('click', function(e) {
+        let target = e.target;
+        if (actions[target.id]) { vibrate(30); audioManager.playSFX('button'); actions[target.id](); }
+        else if (target.classList.contains('option-btn')) { vibrate(30); audioManager.playSFX('button'); handleSelection(target); }
+    });
+    canvas.addEventListener('mousedown', handleInteraction);
+    canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+
+    closeSelfieBtn.addEventListener('click', () => { vibrate(30); selfieOverlay.style.opacity = '0'; setTimeout(() => selfieOverlay.style.display = 'none', 500); stopCamera(); });
+    captureBtn.addEventListener('click', () => {
+        vibrate(50);
+        const capCtx = captureCanvas.getContext('2d');
+        const aspectRatio = selfieVideo.videoWidth / selfieVideo.videoHeight;
+        const w = 600; const h = w / aspectRatio;
+        captureCanvas.width = w; captureCanvas.height = h;
+        finalSelfieCanvas.width = w; finalSelfieCanvas.height = h;
+        capCtx.drawImage(selfieVideo, 0, 0, w, h);
+        drawFramedPhoto();
+        selfieVideo.style.display = 'none'; finalSelfieCanvas.style.display = 'block'; captureControls.style.display = 'none'; resultControls.style.display = 'flex';
+    });
+    retakeBtn.addEventListener('click', () => { vibrate(30); selfieVideo.style.display = 'block'; finalSelfieCanvas.style.display = 'none'; captureControls.style.display = 'flex'; resultControls.style.display = 'none'; });
+    saveBtn.addEventListener('click', () => { vibrate(30); const link = document.createElement('a'); link.download = `GameKids_Skor_${score}.jpg`; link.href = finalSelfieCanvas.toDataURL('image/jpeg', 0.9); link.click(); });
+}
+
+function showSelectionScreen(type) {
+    mainMenuScreen.classList.remove('active'); selectionScreen.classList.add('active'); selectionTitle.textContent = `Pilih ${type}`; selectionOptions.innerHTML = '';
+    let options;
+    if (type === 'Mode') { options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }]; }
+    else { options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 })); }
+    options.forEach(opt => {
+        const btn = document.createElement('button'); btn.className = 'option-btn'; btn.textContent = opt.text;
+        btn.dataset.selectionType = type; btn.dataset.selectionValue = opt.value; btn.dataset.selectionText = opt.text;
+        selectionOptions.appendChild(btn);
+    });
+}
+
+function handleSelection(target) {
+    const type = target.dataset.selectionType; const value = target.dataset.selectionValue; const text = target.dataset.selectionText;
+    if (type === 'Mode') { mode = value; modeSelectionDisplay.textContent = text; modeSelectionDisplay.classList.add('visible'); modeBtn.classList.remove('needs-selection'); }
+    else { level = value; levelSelectionDisplay.textContent = `Level ${value}`; levelSelectionDisplay.classList.add('visible'); levelBtn.classList.remove('needs-selection'); }
+    selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); checkAndEnableStartButton();
+}
+
+function goToMenu() {
+    audioManager.stopAll();
+    gameOverScreen.style.opacity = '0';
+    setTimeout(() => {
+        gameOverScreen.style.display = 'none';
+        gameScreen.classList.remove('active');
+        mainMenuScreen.classList.add('active');
+        const openingAudio = document.getElementById('audio_opening');
+        audioManager.playMusic('opening');
+        startBtn.disabled = true;
+        openingAudio.onended = () => {
+            checkAndEnableStartButton();
         };
-        document.body.addEventListener('click', function(e) {
-            let target = e.target;
-            if (actions[target.id]) { vibrate(30); audioManager.playSFX('button'); actions[target.id](); }
-            else if (target.classList.contains('option-btn')) { vibrate(30); audioManager.playSFX('button'); handleSelection(target); }
-        });
-        canvas.addEventListener('mousedown', handleInteraction);
-        canvas.addEventListener('touchstart', handleInteraction, { passive: true });
-
-        closeSelfieBtn.addEventListener('click', () => { vibrate(30); selfieOverlay.style.opacity = '0'; setTimeout(() => selfieOverlay.style.display = 'none', 500); stopCamera(); });
-        captureBtn.addEventListener('click', () => {
-            vibrate(50);
-            const capCtx = captureCanvas.getContext('2d');
-            const aspectRatio = selfieVideo.videoWidth / selfieVideo.videoHeight;
-            const w = 600; const h = w / aspectRatio;
-            captureCanvas.width = w; captureCanvas.height = h;
-            finalSelfieCanvas.width = w; finalSelfieCanvas.height = h;
-            capCtx.drawImage(selfieVideo, 0, 0, w, h);
-            drawFramedPhoto();
-            selfieVideo.style.display = 'none'; finalSelfieCanvas.style.display = 'block'; captureControls.style.display = 'none'; resultControls.style.display = 'flex';
-        });
-        retakeBtn.addEventListener('click', () => { vibrate(30); selfieVideo.style.display = 'block'; finalSelfieCanvas.style.display = 'none'; captureControls.style.display = 'flex'; resultControls.style.display = 'none'; });
-        saveBtn.addEventListener('click', () => { vibrate(30); const link = document.createElement('a'); link.download = `GameKids_Skor_${score}.jpg`; link.href = finalSelfieCanvas.toDataURL('image/jpeg', 0.9); link.click(); });
-    }
-
-    function showSelectionScreen(type) {
-        mainMenuScreen.classList.remove('active'); selectionScreen.classList.add('active'); selectionTitle.textContent = `Pilih ${type}`; selectionOptions.innerHTML = '';
-        let options;
-        if (type === 'Mode') { options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }]; }
-        else { options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 })); }
-        options.forEach(opt => {
-            const btn = document.createElement('button'); btn.className = 'option-btn'; btn.textContent = opt.text;
-            btn.dataset.selectionType = type; btn.dataset.selectionValue = opt.value; btn.dataset.selectionText = opt.text;
-            selectionOptions.appendChild(btn);
-        });
-    }
-
-    function handleSelection(target) {
-        const type = target.dataset.selectionType; const value = target.dataset.selectionValue; const text = target.dataset.selectionText;
-        if (type === 'Mode') { mode = value; modeSelectionDisplay.textContent = text; modeSelectionDisplay.classList.add('visible'); modeBtn.classList.remove('needs-selection'); }
-        else { level = value; levelSelectionDisplay.textContent = `Level ${value}`; levelSelectionDisplay.classList.add('visible'); levelBtn.classList.remove('needs-selection'); }
-        selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); checkAndEnableStartButton();
-    }
-    
-    function goToMenu() {
-        audioManager.stopAll();
-        gameOverScreen.style.opacity = '0';
-        setTimeout(() => {
-            gameOverScreen.style.display = 'none';
-            gameScreen.classList.remove('active');
-            mainMenuScreen.classList.add('active');
-            const openingAudio = document.getElementById('audio_opening');
-            audioManager.playMusic('opening');
-            startBtn.disabled = true;
-            openingAudio.onended = () => {
-                checkAndEnableStartButton();
-            };
-        }, 500);
-    }
-});
+    }, 500);
+}
 </script>
 
 <div class="copyright-footer">
