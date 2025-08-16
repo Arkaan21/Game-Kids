@@ -12,9 +12,9 @@
 html, body { margin: 0; padding: 0; height: 100%; font-family: 'Luckiest Guy', cursive; background: #f0f2f5; overflow: hidden; touch-action: none; }
 .no-select { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 
-/* Splash Screen - Sekarang tanpa tombol */
-#splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1s ease-out; }
-#splashScreen img { width: 300px; max-width: 80%; }
+/* Splash Screen - Tanpa Tombol, berfungsi sebagai pemicu sentuhan */
+#splashScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.7s ease-out; cursor: pointer; }
+#splashScreen img { width: 300px; max-width: 80%; pointer-events: none; /* Agar sentuhan tidak terhalang gambar */ }
 
 .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 15px; box-sizing: border-box; text-align: center; }
 .screen.active { display: flex; }
@@ -345,40 +345,137 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Otomatis pindah dari splash screen ke menu utama setelah 3 detik
-    setTimeout(() => {
+    function checkAndEnableStartButton() {
+        startBtn.disabled = !(mode && level);
+    }
+
+    // ===================================================================
+    // PERBAIKAN UTAMA UNTUK APK ANDROID
+    // ===================================================================
+    
+    // 1. Fungsi untuk memulai game setelah sentuhan pertama
+    function initGame() {
+        // Inisialisasi audio SEKARANG, setelah ada interaksi pengguna
+        audioManager.init();
+        audioManager.play('opening');
+
+        // Sembunyikan splash screen dan tampilkan menu utama
         splashScreen.style.opacity = '0';
         setTimeout(() => {
             splashScreen.style.display = 'none';
             mainMenuScreen.classList.add('active');
-        }, 1000); // Waktu untuk fade out
-    }, 3000); // Waktu menampilkan splash screen
+        }, 700); // Waktu untuk animasi fade out
 
-    function checkAndEnableStartButton() {
-        startBtn.disabled = !(mode && level);
+        // Setelah game diinisialisasi, pasang semua event listener lainnya
+        setupEventListeners();
+    }
+
+    // 2. Pasang listener HANYA pada splash screen di awal
+    // Ini akan menangkap sentuhan pertama di mana saja pada layar awal
+    splashScreen.addEventListener('click', initGame, { once: true });
+    splashScreen.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Mencegah perilaku aneh di WebView
+        initGame();
+    }, { once: true }); // { once: true } memastikan listener ini hanya berjalan sekali
+
+
+    // 3. Fungsi untuk memasang semua listener tombol setelah game dimulai
+    function setupEventListeners() {
+        const actions = {
+            modeBtn: () => { showSelectionScreen('Mode'); },
+            levelBtn: () => { showSelectionScreen('Level'); },
+            startBtn: () => { if (!startBtn.disabled) { startGameFlow(); } },
+            backToMainBtn: () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); },
+            backToMenu: () => {
+                running = false; cancelAnimationFrame(animationFrameId);
+                if (score > highScore) {
+                    highScore = score; localStorage.setItem('gameKidsHighScore', highScore);
+                    highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
+                }
+                goToMenu();
+            },
+            ulangiBtn: () => {
+                gameOverScreen.style.opacity = '0';
+                setTimeout(() => {
+                    gameOverScreen.style.display = 'none';
+                    startGameFlow();
+                }, 500);
+            },
+            menuBtn: () => { goToMenu(); }
+        };
+
+        // Menggunakan event delegation untuk semua tombol
+        document.body.addEventListener('click', function(e) {
+            let target = e.target;
+
+            if (actions[target.id]) {
+                audioManager.playSFX('button');
+                actions[target.id]();
+            } else if (target.classList.contains('option-btn')) {
+                audioManager.playSFX('button');
+                handleSelection(target);
+            }
+        });
+        
+        // Listener khusus untuk canvas
+        canvas.addEventListener('mousedown', handleInteraction);
+        canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+    }
+
+    function showSelectionScreen(type) {
+        mainMenuScreen.classList.remove('active');
+        selectionScreen.classList.add('active');
+        selectionTitle.textContent = `Pilih ${type}`;
+        selectionOptions.innerHTML = '';
+        let options;
+        if (type === 'Mode') {
+            options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }];
+        } else {
+            options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 }));
+        }
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt.text;
+            btn.dataset.selectionType = type;
+            btn.dataset.selectionValue = opt.value;
+            btn.dataset.selectionText = opt.text;
+            selectionOptions.appendChild(btn);
+        });
+    }
+
+    function handleSelection(target) {
+        const type = target.dataset.selectionType;
+        const value = target.dataset.selectionValue;
+        const text = target.dataset.selectionText;
+        
+        if (type === 'Mode') {
+            mode = value; modeSelectionDisplay.textContent = text;
+            modeSelectionDisplay.classList.add('visible'); modeBtn.classList.remove('needs-selection');
+        } else {
+            level = value; levelSelectionDisplay.textContent = `Level ${value}`;
+            levelSelectionDisplay.classList.add('visible'); levelBtn.classList.remove('needs-selection');
+        }
+        selectionScreen.classList.remove('active');
+        mainMenuScreen.classList.add('active');
+        checkAndEnableStartButton();
     }
     
-    const actions = {
-        modeBtn: () => { showSelectionScreen('Mode'); },
-        levelBtn: () => { showSelectionScreen('Level'); },
-        startBtn: () => { if (!startBtn.disabled) { startGameFlow(); } },
-        backToMainBtn: () => { selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); },
-        backToMenu: () => {
-            running = false; cancelAnimationFrame(animationFrameId);
-            if (score > highScore) {
-                highScore = score; localStorage.setItem('gameKidsHighScore', highScore);
-                highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
-            }
-            goToMenu();
-        },
-        ulangiBtn: () => {
-            gameOverScreen.style.opacity = '0';
-            setTimeout(() => {
-                gameOverScreen.style.display = 'none';
-                startGameFlow();
-            }, 500);
-        },
-        menuBtn: () => { goToMenu(); }
-    };
+    function goToMenu() {
+        audioManager.stopAll();
+        audioManager.play('opening');
+        gameOverScreen.style.opacity = '0';
+        setTimeout(() => {
+            gameOverScreen.style.display = 'none';
+            gameScreen.classList.remove('active');
+            mainMenuScreen.classList.add('active');
+        }, 500);
+    }
+});
+</script>
 
-    function showSelectionScreen
+<div class="copyright-footer">
+  <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
+</div>
+</body>
+</html>
