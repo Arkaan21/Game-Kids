@@ -278,4 +278,46 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.addEventListener('click', function(e) {
             let target = e.target;
             if (actions[target.id]) { audioManager.playSFX('button'); actions[target.id](); }
-            else if (target.classList.contains('option-btn')) { audioManager.playSF
+            else if (target.classList.contains('option-btn')) { audioManager.playSFX('button'); handleSelection(target); }
+        });
+        canvas.addEventListener('mousedown', handleInteraction);
+        canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+    }
+
+    function showSelectionScreen(type) {
+        mainMenuScreen.classList.remove('active'); selectionScreen.classList.add('active'); selectionTitle.textContent = `Pilih ${type}`; selectionOptions.innerHTML = '';
+        let options;
+        if (type === 'Mode') { options = [{ text: 'Huruf', value: 'letters' }, { text: 'Angka', value: 'numbers' }, { text: 'Hewan', value: 'animals' }, { text: 'Hijaiyah', value: 'hijaiyah' }, { text: 'Mix', value: 'mix' }]; }
+        else { options = Array.from({ length: 10 }, (_, i) => ({ text: `Level ${i + 1}`, value: i + 1 })); }
+        options.forEach(opt => {
+            const btn = document.createElement('button'); btn.className = 'option-btn'; btn.textContent = opt.text;
+            btn.dataset.selectionType = type; btn.dataset.selectionValue = opt.value; btn.dataset.selectionText = opt.text;
+            selectionOptions.appendChild(btn);
+        });
+    }
+
+    function handleSelection(target) {
+        const type = target.dataset.selectionType; const value = target.dataset.selectionValue; const text = target.dataset.selectionText;
+        if (type === 'Mode') { mode = value; modeSelectionDisplay.textContent = text; modeSelectionDisplay.classList.add('visible'); modeBtn.classList.remove('needs-selection'); }
+        else { level = value; levelSelectionDisplay.textContent = `Level ${value}`; levelSelectionDisplay.classList.add('visible'); levelBtn.classList.remove('needs-selection'); }
+        selectionScreen.classList.remove('active'); mainMenuScreen.classList.add('active'); checkAndEnableStartButton();
+    }
+    
+    function goToMenu() {
+        audioManager.stopAll();
+        audioManager.play('opening');
+        gameOverScreen.style.opacity = '0';
+        setTimeout(() => {
+            gameOverScreen.style.display = 'none';
+            gameScreen.classList.remove('active');
+            mainMenuScreen.classList.add('active');
+        }, 500);
+    }
+});
+</script>
+
+<div class="copyright-footer">
+  <p>Copyright © 2025 Imam M.A. All Rights Reserved.</p>
+</div>
+</body>
+</html>
