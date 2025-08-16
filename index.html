@@ -62,7 +62,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 /* Gaya untuk Fitur Selfie */
 #selfieOverlay { background: #333; }
 #selfieContainer { position: relative; width: 90vw; max-width: 400px; aspect-ratio: 3 / 4; background: #000; border-radius: 20px; overflow: hidden; }
-#selfieVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); /* Cermin */ }
+#selfieVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 #finalSelfieCanvas { width: 100%; height: 100%; background: #555; }
 .selfie-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; width: 100%; }
 .selfie-btn-row { display: flex; gap: 10px; }
@@ -129,7 +129,6 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     </div>
 </div>
 
-<!-- Overlay Baru untuk Fitur Selfie -->
 <div id="selfieOverlay" class="overlay">
     <div id="selfieContainer">
         <video id="selfieVideo" playsinline autoplay></video>
@@ -160,7 +159,6 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <audio id="audio_gameover" src="gameover.wav" preload="auto"></audio>
 <audio id="audio_targetbaru" src="targetbaru.wav" preload="auto"></audio>
 
-<!-- PERUBAHAN KUNCI: Memindahkan skrip ke akhir body -->
 <script>
 // --- State & Data ---
 let mode = null, level = null, target = 'A';
@@ -231,7 +229,19 @@ const audioManager = {
     init() { if (this.isUnlocked) return; this.isUnlocked = true; try { this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Web Audio API is not supported in this browser"); } const soundNames = ['opening', 'bgm', 'countdown', 'pop', 'button', 'benar', 'salah', 'gameover', 'targetbaru']; soundNames.forEach(name => { this.sounds[name] = document.getElementById(`audio_${name}`); }); },
     stopAll() { if (!this.isUnlocked) return; Object.values(this.sounds).forEach(s => { if (s) { s.pause(); s.currentTime = 0; } }); this.currentSFX = null; },
     playMusic(soundName) { this.stopAll(); return this.sounds[soundName]?.play(); },
-    playSFX(soundName) { if (!this.isUnlocked) return; if (this.currentSFX && !this.currentSFX.paused) { this.currentSFX.pause(); this.currentSFX.currentTime = 0; } const sound = this.sounds[soundName]; if (sound) { sound.currentTime = 0; sound.play(); this.currentSFX = sound; } }
+    playSFX(soundName) {
+        if (!this.isUnlocked) return;
+        if (this.currentSFX && !this.currentSFX.paused) {
+            this.currentSFX.pause();
+            this.currentSFX.currentTime = 0;
+        }
+        const sound = this.sounds[soundName];
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => console.error("Error playing SFX:", e));
+            this.currentSFX = sound;
+        }
+    }
 };
 
 // --- Canvas & Game Logic ---
@@ -299,9 +309,6 @@ function drawFramedPhoto() {
 }
 
 // --- Initialization ---
-// PERBAIKAN: Seluruh logika inisialisasi dipindahkan ke luar 'DOMContentLoaded'
-// dan diletakkan di akhir agar lebih andal.
-
 highScore = parseInt(localStorage.getItem('gameKidsHighScore') || '0', 10);
 highScoreEl.textContent = `Skor Tertinggi: ${highScore}`;
 resizeCanvas();
