@@ -47,10 +47,12 @@ header { position: absolute; top: 0; left: 0; z-index: 10; display: flex; justif
 #livesContainer { font-size: 24px; }
 .btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; background-color: #007AFF; color: white; font-family: 'Luckiest Guy', cursive;}
 #gameArea { position: relative; flex: 1; width: 100%; height: 100%; background-color: #e0f7fa; overflow: hidden; }
-.target { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); font-size: 64px; padding: 10px 25px; border-radius: 12px; color: white; z-index: 15; text-shadow: 3px 3px 0px rgba(0,0,0,0.07); background: #E74C3C; animation: wobble 1.4s infinite; }
+.target-item { font-size: 64px; padding: 10px 25px; border-radius: 12px; color: white; text-shadow: 3px 3px 0px rgba(0,0,0,0.07); background: #E74C3C; animation: wobble 1.4s infinite; transition: background-color 0.3s, opacity 0.3s; }
+#targetContainer { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); z-index: 15; display: flex; gap: 10px; }
+.target-item.popped { background-color: #7f8c8d; opacity: 0.6; animation: none; }
 canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 #popCanvas { z-index: 5; pointer-events: none; }
-@keyframes wobble { 0%, 100% { transform: translateX(-50%) rotate(-2deg) scale(1); } 50% { transform: translateX(-50%) rotate(2deg) scale(1.05); } }
+@keyframes wobble { 0%, 100% { transform: rotate(-2deg) scale(1); } 50% { transform: rotate(2deg) scale(1.05); } }
 .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999; opacity: 0; transition: opacity 0.5s; }
 .overlay-content { background: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
 .overlay-content h2 { font-size: 48px; margin: 0 0 10px 0; }
@@ -318,6 +320,7 @@ function triggerGameOver() {
 function handleInteraction(e) {
     if (!running) return;
     vibrate(50);
+    audioManager.stop('tangkaptarget');
     audioManager.playSFX('pop');
     const touch = e.touches ? e.touches[0] : e;
     if (!touch.clientX) return;
@@ -341,7 +344,7 @@ function handleInteraction(e) {
 
                 audioManager.playResponseSFX('benar');
                 if (poppedTargets.length === targets.length) {
-                    setTimeout(pickNewTargets, 500); // Beri jeda sebelum target baru muncul
+                    setTimeout(pickNewTargets, 500);
                 }
             } else {
                 score -= 15;
