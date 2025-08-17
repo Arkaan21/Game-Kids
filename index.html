@@ -62,7 +62,7 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 /* Gaya untuk Fitur Selfie */
 #selfieOverlay { background: #333; }
 #selfieContainer { position: relative; width: 90vw; max-width: 400px; aspect-ratio: 3 / 4; background: #000; border-radius: 20px; overflow: hidden; }
-#selfieVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); /* Cermin */ }
+#selfieVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 #finalSelfieCanvas { width: 100%; height: 100%; background: #555; }
 .selfie-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; width: 100%; }
 .selfie-btn-row { display: flex; gap: 10px; }
@@ -129,7 +129,6 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     </div>
 </div>
 
-<!-- Overlay Baru untuk Fitur Selfie -->
 <div id="selfieOverlay" class="overlay">
     <div id="selfieContainer">
         <video id="selfieVideo" playsinline autoplay></video>
@@ -160,7 +159,6 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 <audio id="audio_gameover" src="gameover.wav" preload="auto"></audio>
 <audio id="audio_targetbaru" src="targetbaru.wav" preload="auto"></audio>
 
-<!-- PERUBAHAN KUNCI: Memindahkan skrip ke akhir body -->
 <script>
 // --- State & Data ---
 let mode = null, level = null, target = 'A';
